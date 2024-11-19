@@ -29,7 +29,14 @@
           width="30"
         />
       </v-btn>
-      <v-btn type="text" to="/test">
+
+      <!-- Application btn -->
+      <v-btn
+        type="text"
+        to="/test"
+        style="background-color: #43b149; color: white; font-weight: bold"
+        class="no-btncolor-change"
+      >
         <v-img
           src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAASCAYAAAC5DOVpAAAA20lEQVQ4je2TPQrCQBSEP9RSsPQCVv6EgKBgYyHYCzbewM6TiK2F4C0UBA/gBbxESi2VkeAKm7hxg6Z0IGR3582XB/uCJN8zlXSTNPPVlvCrDZSBvq8yDyy3/rBiYENgBdQyMvH5EhiljYqjeAFMgAEwdoAOQA9oAMeE6xi+lqRIT50krcx6a/YyfjudzZrmjgW8K6nI+G+5T7+HDZTVkRP0gtUl7SXVPMAsUJzbxZx4E5jiMOOLTUlr83b5ockHrttM6wzMc9QVO7R2Zxvg+gWjasNegO5PbcHlAQSyfYdj7F5wAAAAAElFTkSuQmCC"
           alt="Application Image"
@@ -37,7 +44,14 @@
         />
         <p>&nbsp;アプリ</p>
       </v-btn>
-      <v-btn type="text" to="/test">
+
+      <!-- Login btn -->
+      <v-btn
+        type="text"
+        to="/test"
+        style="background-color: #ff9900; color: white; font-weight: bold"
+        class="no-btncolor-change"
+      >
         <v-img
           src="https://www.onsen.ag/assets/img/common/icon-header-02.png"
           alt="Login Image"
@@ -81,5 +95,9 @@ const toggleDrawer = () => {
 .home-v-btn:deep(*) {
   background-color: transparent !important; /* 배경색 제거 */
   box-shadow: none !important; /* 그림자 제거 */
+}
+
+.v-btn:hover:not(.no-btncolor-change) {
+  color: #43b149 !important;
 }
 </style>
