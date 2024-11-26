@@ -62,7 +62,7 @@
     </v-app-bar>
 
     <!-- Navigation Desk -->
-    <v-navigation-drawer v-model="drawer" app>
+    <v-navigation-drawer v-model="drawer" temporary app>
       <v-list>
         <v-list-item to="/">
           <v-list-item-title>Home</v-list-item-title>
@@ -77,7 +77,7 @@
     </v-navigation-drawer>
 
     <!-- 메인 콘텐츠 -->
-    <v-main>
+    <v-main style="overflow-x: scroll">
       <NuxtPage />
     </v-main>
   </v-app>
