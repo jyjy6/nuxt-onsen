@@ -6,5 +6,4 @@ export default defineNuxtConfig({
   build: {
     transpile: ["vuetify"], // Vuetify 트랜스파일 설정
   },
-  
 });

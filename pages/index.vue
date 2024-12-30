@@ -7,6 +7,8 @@ import "swiper/css/pagination";
 
 const modules = [Navigation, Pagination, Autoplay];
 // First Swiper
+// 스와이퍼들 오브젝트자료 하드코딩돼어있는거 나중에 1,2번은 각각 공지/이벤트 데이터베이스에 넣고 출력
+// 3번쨰 스와이퍼는 おすすめ방송 일단 내맘대로하고 나중에 유저정보에맞춰서 AI분석에따른 おすすめ방송출력
 const swiperOptions = {
   modules,
   slidesPerView: 1,
@@ -78,7 +80,122 @@ const items2 = ref([
       "https://d3bzklg4lms4gh.cloudfront.net/banner_ad/banner_image/default/production/04/bc/125814aad5c9a83c60b462f5a5d78373c3e7/image?v=1690427379",
   },
 ]);
+
+//Third Swiper
+const swiperOptions3 = {
+  autoplay: {
+    delay: 3000, // 다른 딜레이 값
+    disableOnInteraction: false,
+  },
+  modules,
+  slidesPerView: 4,
+  spaceBetween: 30,
+  navigation: true,
+  pagination: { clickable: true },
+  dots: true,
+};
+
+const items3 = ref([
+  {
+    id: 7,
+    title: "internet something~~~~",
+    image:
+      "https://d3bzklg4lms4gh.cloudfront.net/program_info/image/default/production/0d/06/ae390a11f2cee482e656b2161b6ee175d5a8/image?v=1733562920",
+  },
+  {
+    id: 8,
+    title: "radio is good~~~~~",
+    image:
+      "https://d3bzklg4lms4gh.cloudfront.net/program_info/image/default/production/fe/1e/9335929e1bdf8e6893c84563dbdbace741aa/image?v=1733904363",
+  },
+  {
+    id: 9,
+    title: "go go go let`s move",
+    image:
+      "https://d3bzklg4lms4gh.cloudfront.net/program_info/image/default/production/d9/02/fd691478d67977a8aa183808aebab41a6317/image?v=1733298264",
+  },
+  {
+    id: 10,
+    title: "go go go let`s move",
+    image:
+      "https://d3bzklg4lms4gh.cloudfront.net/program_info/image/default/production/d9/02/fd691478d67977a8aa183808aebab41a6317/image?v=1733298264",
+  },
+  {
+    id: 11,
+    title: "go go go let`s move",
+    image:
+      "https://d3bzklg4lms4gh.cloudfront.net/program_info/image/default/production/3a/6b/3de4026429fa7a4cbae8cc472eae3e9d4b39/image?v=1733994177",
+  },
+]);
+
 // swiper end=========================================================================
+
+const items5 = [
+  "Card 1",
+  "Card 2",
+  "Card 3",
+  "Card 4",
+  "Card 5",
+  "Card 6",
+  "Card 7",
+  "Card 8",
+  "Card 8",
+  "Card 8",
+  "Card 8",
+];
+
+// buttons 배열의 아이템 타입 정의
+interface ButtonItem {
+  label: string;
+  active: boolean;
+}
+
+// buttonbox=======================================
+const buttons = ref([
+  { label: "番組一覧", active: false },
+  { label: "マイページ", active: false },
+  { label: "おすすめ", active: false },
+  { label: "イベント・生放送", active: false },
+]);
+
+const setActiveButton = (index: number) => {
+  buttons.value.forEach((button: ButtonItem, i: number) => {
+    setTimeout(() => {
+      button.active = i === index;
+    }, 120);
+  });
+};
+// ================================================
+
+// categoryButtons 배열의 아이템 타입 정의
+interface CategoryButton {
+  label: string;
+  active: boolean;
+}
+
+// categoryButtons=======================================
+const categoryButtons = ref([
+  { label: "月", active: false },
+  { label: "火", active: false },
+  { label: "水", active: false },
+  { label: "木", active: false },
+  { label: "金", active: false },
+  { label: "土・日", active: false },
+  { label: "新番組", active: false },
+  { label: "PREMIUM", active: false },
+  { label: "ランキング", active: false },
+  { label: "アニメ・ゲーム", active: false },
+  { label: "検索", active: false },
+]);
+
+const setCategoryActive = (index: number) => {
+  categoryButtons.value.forEach((button: CategoryButton, i: number) => {
+    setTimeout(() => {
+      button.active = i === index;
+    }, 120);
+  });
+};
+// ================================================
 </script>
 
 <template>
@@ -125,13 +242,59 @@ const items2 = ref([
         </div>
       </div>
     </div>
-    <v-container class="d-flex justify-center ga-2 mt-10 pa-0">
-      <v-btn variant="tonal" style="width: 150px">番組一覧</v-btn>
-      <v-btn variant="tonal" style="width: 150px">マイページ</v-btn>
-      <v-btn variant="tonal" style="width: 150px">おすすめ</v-btn>
-      <v-btn variant="tonal" style="width: 150px">イベント・生放送</v-btn>
-    </v-container>
-    
+    <client-only>
+      <v-container class="d-flex justify-center ga-2 mt-10 pa-0">
+        <v-btn
+          v-for="(button, index) in buttons"
+          :key="index"
+          :class="['tonal-btn', { active: button.active }]"
+          @click="setActiveButton(index)"
+          variant="tonal"
+          style="width: 150px"
+        >
+          {{ button.label }}
+        </v-btn>
+      </v-container>
+
+      <v-container style="width: 70%">
+        <p style="color: #43b149; font-size: 1.2rem; margin-bottom: 15px">
+          おすすめ番組
+        </p>
+        <SwiperComponent :swiperOptions="swiperOptions3" :items="items3" />
+        <div class="d-flex align-center" style="margin-top: 100px">
+          <p style="color: #43b149; font-size: 1.2rem; margin-right: 20px">
+            カテゴリ
+          </p>
+          <div class="d-flex flex-wrap gap-2 justify-center align-center">
+            <v-btn
+              v-for="(button, index) in categoryButtons"
+              :key="index"
+              :class="['tonal-btn', { active: button.active }, 'mr-5']"
+              @click="setCategoryActive(index)"
+              variant="tonal"
+              size="small"
+            >
+              {{ button.label }}
+            </v-btn>
+          </div>
+        </div>
+
+        <!-- items5 표시 -->
+        <v-row class="mt-4">
+          <v-col
+            v-for="(item, index) in items5"
+            :key="index"
+            style="max-width: calc(100% / 5); flex: 0 0 calc(100% / 5)"
+          >
+            <v-card>
+              <v-card-text>
+                {{ item }}
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-container>
+    </client-only>
   </main>
 </template>
 
@@ -139,5 +302,13 @@ const items2 = ref([
 .btn-container {
   display: flex;
   justify-content: center;
+}
+.tonal-btn {
+  transition: background-color 0.3s ease;
+}
+
+.tonal-btn.active {
+  background-color: #43b149;
+  color: white;
 }
 </style>
