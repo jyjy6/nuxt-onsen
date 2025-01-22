@@ -47,7 +47,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
+
 definePageMeta({
   layout: "admin",
 });
@@ -69,23 +71,10 @@ const form = ref<ContentForm>({
   info: "",
 });
 
-const personalities = ref<string[]>([]); // 빈 배열로 초기화
+const personalities = ref<string[]>([]);
 const dates = ["月", "火", "水", "木", "金", "土", "日"];
-
-// personalities 데이터 가져오기
-onMounted(async () => {
-  try {
-    const response = await axios.get("/api/personality");
-    if (response.data.success) {
-      // personalityName만 추출하여 배열로 만들기
-      personalities.value = response.data.data.map(
-        (item: { personalityName: string }) => item.personalityName
-      );
-    }
-  } catch (error) {
-    console.error("진행자 목록 가져오기 실패:", error);
-  }
-});
+const route = useRoute();
+const router = useRouter();
 
 const rules = {
   required: (value: string) => !!value || "필수 입력입니다.",
@@ -93,19 +82,36 @@ const rules = {
     /^https?:\/\/.+/.test(value) || "유효한 URL을 입력해주세요.",
 };
 
+// 진행자 목록 불러오기 및 데이터 로드
+onMounted(async () => {
+  try {
+    // 진행자 목록 불러오기
+    const personalityResponse = await axios.get("/api/personality");
+    if (personalityResponse.data.success) {
+      personalities.value = personalityResponse.data.data.map(
+        (item: { personalityName: string }) => item.personalityName
+      );
+    }
+
+    // 콘텐츠 데이터 불러오기
+    const contentResponse = await axios.get(`/api/contents/${route.params.id}`);
+    if (contentResponse.data.success) {
+      form.value = contentResponse.data.data; // 초기 데이터 설정
+    }
+  } catch (error) {
+    console.error("데이터 불러오기 실패:", error);
+  }
+});
+
+// 수정된 데이터 저장
 const submitContentForm = async () => {
   try {
-    const response = await axios.post("/api/contents", form.value);
-    alert("저장 성공:" + response.data);
-    console.log(form.value);
-    // 폼 초기화
-    form.value = {
-      contentsName: "",
-      personality: [],
-      mainImg: "",
-      date: "",
-      info: "",
-    };
+    const response = await axios.put(
+      `/api/contents/${route.params.id}`,
+      form.value
+    );
+    alert("저장 성공: " + response.data);
+    router.push("/broadcast/list"); // 저장 후 목록으로 이동
   } catch (error) {
     console.error("저장 실패:", error);
   }

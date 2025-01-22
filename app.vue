@@ -20,7 +20,8 @@
       <v-btn type="text" to="/test">音泉チャンネル</v-btn>
       <v-btn type="text" to="/test">更新情報</v-btn>
       <v-btn type="text" to="/test">PREMIUM</v-btn>
-      <v-btn type="text" to="/test">インフォメーション</v-btn>
+      <v-btn type="text" to="/broadcast/list">BroadCast List</v-btn>
+      <v-btn type="text" to="/admin">admin</v-btn>
       <v-btn type="text" to="/test">
         <v-img
           src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAAUCAYAAACAl21KAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAEqADAAQAAAABAAAAFAAAAAAV6Uf1AAABrUlEQVQ4EZWUzytEURTHZ/wqVixGg1JSsmChKBursbab8WunlFgoG2WDlX+Alf+AERsLoYSSIskGW7HwM5Efk+Lzfc6r23heb0593veec8+dO+ee+148FouNQjW4toez7Qb+GbcR74FFzafhG45hC07hAZIQZnVM3sC8m7SMs2KBcvQc1swPkgqC2ngTStyEBM4dDFqwE/1yfAt7EuepjS+g0ovkPTL4j1Bj8Tk0qMRZy2uyvEDJEl23mTL0DFbNl/RCDlJywkzdU4lDlqSuaOEAdMAbqMuRTLs+Q71lT6P3oA4tWCyyqIO6CjpYdUUdurIxEt1Uov6FX0YL4w/oh4JNi16h0VZOovpxbVKQ6ax043ehCIrhAFR2ZGsnUx3yD3rCVuruKN5nfqjUMnsNfodU4js0g2wcdEVCS9R7dgTqmPsO6VIegspTJ3cgC4GmhCW4hKq8jCS+XpcpizegL6Bz/GMzRJ5A5xBkut2f0GqTI6hKTJjvSYZnDrrdYMBYn5YTKLW5DVRfAs/8Do35gRD1S9wnR9dAqiuS1rkMg8z7XP4OQ58pZrvyMm5/AIh6VCYDGXE0AAAAAElFTkSuQmCC"
@@ -46,19 +47,39 @@
       </v-btn>
 
       <!-- Login btn -->
-      <v-btn
-        type="text"
-        to="/test"
-        style="background-color: #ff9900; color: white; font-weight: bold"
-        class="no-btncolor-change"
-      >
-        <v-img
-          src="https://www.onsen.ag/assets/img/common/icon-header-02.png"
-          alt="Login Image"
-          width="20"
-        />
-        <p>&nbsp;ログイン</p>
-      </v-btn>
+      <div v-if="isLoggedIn" class="d-flex align-center" style="gap: 10px">
+        <!-- 사용자 이름 및 이메일 -->
+        <div>
+          <p style="margin: 0; font-weight: bold">{{ userName }}</p>
+          <p style="margin: 0; color: gray">{{ userEmail }}</p>
+        </div>
+
+        <!-- 로그아웃 버튼 -->
+        <v-btn
+          type="text"
+          style="background-color: #ff9900; color: white; font-weight: bold"
+          class="no-btncolor-change"
+          @click="handleLogout"
+        >
+          로그아웃
+        </v-btn>
+      </div>
+      <div v-else>
+        <!-- 로그인 버튼 -->
+        <v-btn
+          type="text"
+          to="/login"
+          style="background-color: #ff9900; color: white; font-weight: bold"
+          class="no-btncolor-change"
+        >
+          <v-img
+            src="https://www.onsen.ag/assets/img/common/icon-header-02.png"
+            alt="Login Image"
+            width="20"
+          />
+          <p>&nbsp;ログイン</p>
+        </v-btn>
+      </div>
     </v-app-bar>
 
     <!-- Navigation Desk -->
@@ -78,12 +99,45 @@
 
     <!-- 메인 콘텐츠 -->
     <v-main style="overflow-x: scroll">
-      <NuxtPage />
+      <NuxtLayout>
+        <NuxtPage />
+      </NuxtLayout>
     </v-main>
   </v-app>
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+const isLoggedIn = ref(false);
+const userName = ref(""); // 사용자 이름
+const userEmail = ref(""); // 사용자 이메일
+
+// 로컬스토리지에서 토큰과 사용자 정보 가져오기
+onMounted(() => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    isLoggedIn.value = true;
+
+    // 토큰에서 사용자 정보 가져오기 (예: 이름, 이메일)
+    const user = JSON.parse(localStorage.getItem("user") || "{}"); // JSON으로 저장된 사용자 정보 가져오기
+    userName.value = user.name || "Guest";
+    userEmail.value = user.email || "guest@example.com";
+  }
+});
+
+// 로그아웃 처리
+const handleLogout = () => {
+  // 로컬스토리지 비우기
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+
+  isLoggedIn.value = false;
+  router.push("/login"); // 로그인 페이지로 이동
+};
+
 const drawer = ref(false);
 
 const toggleDrawer = () => {

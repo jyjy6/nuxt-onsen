@@ -98,4 +98,7 @@ const submitEpisodeForm = async () => {
     console.error("저장 실패:", error);
   }
 };
+definePageMeta({
+  layout: "admin",
+});
 </script>
