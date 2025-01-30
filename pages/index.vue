@@ -306,9 +306,17 @@ const setCategoryActive = (index: number) => {
           class="d-flex align-center justify-center"
           style="margin-top: 100px"
         >
-          <p style="color: #43b149; font-size: 1.2rem; margin-right: 20px">
+          <p
+            style="
+              color: #43b149;
+              font-size: 1.2rem;
+              margin-right: 20px;
+              white-space: nowrap;
+            "
+          >
             カテゴリ
           </p>
+
           <div class="d-flex gap-2 justify-center align-center">
             <v-btn
               v-for="(button, index) in categoryButtons"

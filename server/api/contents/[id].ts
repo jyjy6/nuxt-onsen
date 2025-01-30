@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // HTTP 메서드에 따라 분기 처리
-  if (event.req.method === "GET") {
+  if (event.method === "GET") {
     // GET 요청: 콘텐츠 조회
     try {
       const content = await ContentModel.findById(id);
@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
       }
       return { success: false, error: "Unknown error occurred" };
     }
-  } else if (event.req.method === "PUT") {
+  } else if (event.method === "PUT") {
     // PUT 요청: 콘텐츠 수정
     try {
       const body = await readBody(event); // 요청 본문 데이터 읽기

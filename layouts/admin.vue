@@ -42,6 +42,10 @@ const menuItems = [
     title: "공지사항 추가",
     path: "/admin/add/notice",
   },
+  {
+    title: "IP정보확인",
+    path: "/admin/ipList",
+  },
 ];
 </script>
 

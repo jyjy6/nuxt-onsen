@@ -1,21 +1,18 @@
-// api/auth/login.ts
-import { defineEventHandler, readBody } from "h3";
+import { defineEventHandler, readBody, setCookie } from "h3";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import RegisterModel from "../../models/auth/RegisterModel";
 
 export default defineEventHandler(async (event) => {
-  // 요청 데이터 읽기
   const body = await readBody(event);
   const { email, password } = body;
 
-  // 유효성 검사
   if (!email || !password) {
     return { success: false, message: "Both email and password are required." };
   }
 
   try {
-    // 이메일로 사용자 찾기
+    // 사용자 조회
     const user = await RegisterModel.findOne({ email });
     if (!user) {
       return { success: false, message: "Invalid credentials." };
@@ -27,22 +24,37 @@ export default defineEventHandler(async (event) => {
       return { success: false, message: "Invalid credentials." };
     }
 
-    // JWT 토큰 발급
-    const token = jwt.sign(
+    // 액세스 토큰 생성
+    const accessToken = jwt.sign(
       { userId: user._id, email: user.email },
-      process.env.JWT_SECRET_KEY as string, // 환경 변수로 JWT 비밀키를 관리해야 합니다.
-      { expiresIn: "1h" } // 토큰 유효 기간 1시간
+      process.env.JWT_ACCESS_SECRET_KEY as string,
+      { expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN }
     );
 
-    // 성공 응답
+    // 리프레시 토큰 생성
+    const refreshToken = jwt.sign(
+      { userId: user._id, email: user.email },
+      process.env.JWT_REFRESH_SECRET_KEY as string,
+      { expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN }
+    );
+
+    // 리프레시 토큰을 HttpOnly 쿠키에 저장
+    setCookie(event, "refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      path: "/",
+      maxAge: 30 * 24 * 60 * 60, // 30 days
+    });
+
+    // 응답
     return {
       success: true,
       message: "Login successful.",
-      token,
+      accessToken,  // 액세스 토큰 클라이언트로 전송
       user: { userId: user._id, email: user.email, name: user.name },
     };
   } catch (error) {
-    // 에러 응답
     return { success: false, message: "Internal server error.", error };
   }
 });

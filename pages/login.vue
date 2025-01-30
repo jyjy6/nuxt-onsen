@@ -32,6 +32,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
 const email = ref("");
 const password = ref("");
@@ -44,20 +45,19 @@ const handleLogin = async () => {
       password: password.value,
     });
 
-    // 로그인 성공 시
-    if (response.data.success && response.data.token) {
-      // Save JWT token to localStorage or cookie
-      localStorage.setItem("token", response.data.token);
+    if (response.data.success && response.data.accessToken) {
+      // 액세스 토큰 저장 (예: localStorage)
+      localStorage.setItem("accessToken", response.data.accessToken);
       localStorage.setItem("user", JSON.stringify(response.data.user));
+      const decodedToken = jwtDecode(response.data.accessToken);
+      const expirationTime = decodedToken.exp; // 만료 시간 (Unix timestamp)
+      
 
-      alert("로그인됐음");
-      // Redirect to dashboard or homepage
+      alert("로그인 성공!");
       router.push("/").then(() => {
-        // 페이지 새로 고침
         window.location.reload();
       });
     } else {
-      // 로그인 실패 시
       alert(response.data.message || "Login failed.");
     }
   } catch (error) {
