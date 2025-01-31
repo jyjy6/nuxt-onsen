@@ -15,6 +15,7 @@ export default defineNuxtConfig({
     public: {
       apiBase: "http://localhost:3000/api",
     },
+    trustProxy: true,
   },
   devServer: {
     port: 3000,
