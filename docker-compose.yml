@@ -1,0 +1,10 @@
+version: "3.8"
+services:
+  nuxt-onsen:
+    container_name: onsen-container
+    image: onsen:1
+    build: .
+    ports:
+      - 3000:3000
+    env_file:
+      - .env

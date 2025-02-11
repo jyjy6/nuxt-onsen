@@ -1,8 +1,6 @@
 import axios from "axios";
 
 export default defineNuxtPlugin(() => {
-  console.log("Axios Plugin: Initialized");
-
   // 액세스 토큰을 재발급받는 함수
   const refreshAccessToken = async () => {
     console.log("refreshAccessToken: Function invoked");

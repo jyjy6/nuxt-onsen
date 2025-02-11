@@ -12,7 +12,8 @@
   "dependencies": {
     "@mdi/font": "^7.4.47",
     "axios": "^1.7.8",
-    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.7",
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",
     "mongoose": "^8.8.2",
@@ -26,6 +27,7 @@
   "devDependencies": {
     "@nuxt/typescript": "^2.8.1",
     "@types/bcrypt": "^5.0.2",
+    "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/request-ip": "^0.0.41"
   }

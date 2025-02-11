@@ -44,6 +44,7 @@ const handleLogin = async () => {
       email: email.value,
       password: password.value,
     });
+    
 
     if (response.data.success && response.data.accessToken) {
       // 액세스 토큰 저장 (예: localStorage)
@@ -51,14 +52,11 @@ const handleLogin = async () => {
       localStorage.setItem("user", JSON.stringify(response.data.user));
       const decodedToken = jwtDecode(response.data.accessToken);
       const expirationTime = decodedToken.exp; // 만료 시간 (Unix timestamp)
-      
 
       alert("로그인 성공!");
       router.push("/").then(() => {
         window.location.reload();
       });
-    } else {
-      alert(response.data.message || "Login failed.");
     }
   } catch (error) {
     console.error("Login failed:", error);

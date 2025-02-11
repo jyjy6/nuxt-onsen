@@ -1,60 +1,79 @@
 import { defineEventHandler, readBody, setCookie } from "h3";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import RegisterModel from "../../models/auth/RegisterModel";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+interface LoginBody {
+  email: string;
+  password: string;
+}
 
 export default defineEventHandler(async (event) => {
-  const body = await readBody(event);
-  const { email, password } = body;
-
-  if (!email || !password) {
-    return { success: false, message: "Both email and password are required." };
-  }
-
   try {
-    // 사용자 조회
-    const user = await RegisterModel.findOne({ email });
+    const body = await readBody<LoginBody>(event);
+
+    if (!body.email || !body.password) {
+      return { success: false, message: "이메일과 비밀번호가 필요합니다." };
+    }
+
+    const user = await RegisterModel.findOne({ email: body.email });
+
     if (!user) {
-      return { success: false, message: "Invalid credentials." };
+      return { success: false, message: "인증 실패" };
     }
 
-    // 비밀번호 비교
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) {
-      return { success: false, message: "Invalid credentials." };
+    try {
+      const isValid = await bcrypt.compare(
+        String(body.password),
+        String(user.password)
+      );
+
+      if (!isValid) {
+        return { success: false, message: "인증 실패" };
+      }
+    } catch (bcryptError) {
+      console.error("비밀번호 검증 에러:", bcryptError);
+      return { success: false, message: "비밀번호 검증 실패" };
     }
 
-    // 액세스 토큰 생성
     const accessToken = jwt.sign(
       { userId: user._id, email: user.email },
-      process.env.JWT_ACCESS_SECRET_KEY as string,
+      process.env.JWT_ACCESS_SECRET_KEY || "",
       { expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN }
     );
 
-    // 리프레시 토큰 생성
     const refreshToken = jwt.sign(
       { userId: user._id, email: user.email },
-      process.env.JWT_REFRESH_SECRET_KEY as string,
+      process.env.JWT_REFRESH_SECRET_KEY || "",
       { expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN }
     );
 
-    // 리프레시 토큰을 HttpOnly 쿠키에 저장
     setCookie(event, "refreshToken", refreshToken, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       path: "/",
-      maxAge: 30 * 24 * 60 * 60, // 30 days
+      maxAge: 30 * 24 * 60 * 60,
     });
 
-    // 응답
     return {
       success: true,
-      message: "Login successful.",
-      accessToken,  // 액세스 토큰 클라이언트로 전송
-      user: { userId: user._id, email: user.email, name: user.name },
+      message: "로그인 성공",
+      accessToken,
+      user: {
+        userId: user._id,
+        email: user.email,
+        name: user.name,
+      },
     };
-  } catch (error) {
-    return { success: false, message: "Internal server error.", error };
+  } catch (error: any) {
+    console.error("로그인 에러:", error?.message);
+    return {
+      success: false,
+      message: "서버 에러",
+    };
   }
 });
