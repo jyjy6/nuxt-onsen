@@ -1,0 +1,13 @@
+FROM node:20
+
+WORKDIR /app
+
+# 개발에 필요한 종속성 설치
+COPY package*.json ./
+RUN npm install
+
+# 포트 설정
+EXPOSE 3000
+
+# 개발 서버 실행 (볼륨 마운트를 통해 코드는 실시간으로 공유됨)
+CMD ["npm", "run", "dev"]

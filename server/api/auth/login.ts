@@ -22,6 +22,7 @@ export default defineEventHandler(async (event) => {
     const user = await RegisterModel.findOne({ email: body.email });
 
     if (!user) {
+      event.node.res.statusCode = 401;
       return { success: false, message: "인증 실패" };
     }
 
@@ -32,6 +33,7 @@ export default defineEventHandler(async (event) => {
       );
 
       if (!isValid) {
+        event.node.res.statusCode = 401;
         return { success: false, message: "인증 실패" };
       }
     } catch (bcryptError) {

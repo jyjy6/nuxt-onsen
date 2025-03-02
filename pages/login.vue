@@ -31,7 +31,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { jwtDecode } from "jwt-decode";
 
 const email = ref("");
@@ -44,7 +44,11 @@ const handleLogin = async () => {
       email: email.value,
       password: password.value,
     });
-    
+    if (!response.data.success) {
+      console.error("Login failed:", response.data.message);
+      alert(response.data.message || "로그인에 실패했습니다.");
+      return;
+    }
 
     if (response.data.success && response.data.accessToken) {
       // 액세스 토큰 저장 (예: localStorage)
@@ -58,8 +62,8 @@ const handleLogin = async () => {
         window.location.reload();
       });
     }
-  } catch (error) {
-    console.error("Login failed:", error);
+  } catch (error: any) {
+    console.error("Login failed:", error.message);
     alert("Login failed. Please check your credentials.");
   }
 };

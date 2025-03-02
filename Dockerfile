@@ -13,11 +13,11 @@ RUN npm run build
 FROM node:20-alpine
 WORKDIR /app
 
-ENV NODE_OPTIONS="--max-old-space-size=4096"
 # 실행에 필요한 파일만 복사　実行に必要なファイルだけコピー
 COPY --from=builder /app/.output .output
 COPY package.json package-lock.json ./
-RUN npm install --omit=dev  # 실행에 필요한 패키지만 설치
+RUN npm install --omit=dev
+# 실행에 필요한 패키지만 설치
 
 
 # PORT 設定（基本：３０００）

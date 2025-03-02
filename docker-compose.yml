@@ -1,10 +1,28 @@
 version: "3.8"
 services:
-  nuxt-onsen:
-    container_name: onsen-container
+  onsen:
     image: onsen:1
     build: .
     ports:
-      - 3000:3000
+      - "3000"
+      - "24678:24678"
     env_file:
       - .env
+    networks:
+      - mynet1
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    restart: always
+    depends_on:
+      - onsen
+    networks:
+      - mynet1
+
+networks:
+  mynet1:
+    driver: bridge

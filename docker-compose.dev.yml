@@ -1,0 +1,33 @@
+version: "3.8"
+services:
+  onsen:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+      - "24678:24678" # HMR 포트
+    env_file:
+      - .env
+    volumes:
+      - .:/app # 주요 변경점: 볼륨 마운트로 로컬 코드를 컨테이너와 공유
+      - /app/node_modules # node_modules는 컨테이너 내부 것 사용
+    networks:
+      - mynet1
+    command: npm run dev
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    restart: always
+    depends_on:
+      - onsen
+    networks:
+      - mynet1
+
+networks:
+  mynet1:
+    driver: bridge

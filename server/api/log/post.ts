@@ -4,12 +4,19 @@ import requestIp from "request-ip";
 
 export default defineEventHandler(async (event) => {
   try {
-    // x-forwarded-for에서 첫 번째 IP를 추출하고, 없으면 requestIp.getClientIp() 또는 remoteAddress 사용
-    let ip = requestIp.getClientIp(event.node.req);
-    if (!ip || ip === "127.0.0.1") {
-      //@ts-ignore
-      ip = getHeader(event, "x-forwarded-for")?.split(',')[0]?.trim() || event.node.req.socket.remoteAddress;
+    // ✅ 헤더에서 직접 IP 추출 (계층화된 프록시 고려)
+    const xRealIp = getHeader(event, "x-real-ip");
+    const xForwardedFor = getHeader(event, "x-forwarded-for");
+
+    // 최종 IP 결정
+    let ip = xRealIp || xForwardedFor?.split(",")[0]?.trim();
+
+    // Docker 내부 IP가 감지되면 remoteAddress 사용
+    if (ip?.startsWith("172.")) {
+      ip = event.node.req.socket.remoteAddress;
     }
+
+    console.log("[Debug] Final IP:", ip);
 
     const userAgent = getHeader(event, "user-agent");
 

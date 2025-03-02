@@ -1,5 +1,5 @@
 import { defineEventHandler, readBody } from "h3";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import RegisterModel from "../../models/auth/RegisterModel"; // RegisterModel 경로 확인
 
 export default defineEventHandler(async (event) => {
