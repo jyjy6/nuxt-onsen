@@ -49,6 +49,9 @@
         <p>파일 크기: {{ formatFileSize(selectedFile?.size || 0) }}</p>
       </div>
     </div>
+    <v-btn color="green" @click="confirmFile" :disabled="!tempFile">
+      전송
+    </v-btn>
   </div>
 </template>
 
@@ -58,17 +61,21 @@ import { useS3Upload } from "~/composables/useS3Upload";
 
 const { isUploading, uploadProgress, uploadError, uploadedUrl, uploadToS3 } =
   useS3Upload();
+const tempFile = ref<File | null>(null);
 const selectedFile = ref<File | null>(null);
+const fileConfirmed = ref(false);
 
 // 파일 타입 감지
 const fileType = computed(() => {
-  if (!selectedFile.value) return null;
-
-  const type = selectedFile.value.type;
-  if (type.startsWith("image/")) return "image";
-  if (type.startsWith("video/")) return "video";
-  if (type.startsWith("audio/")) return "audio";
-  return "other";
+  if (!tempFile.value) return null;
+  const type = tempFile.value.type;
+  if (fileConfirmed) {
+    if (type.startsWith("image/")) return "image";
+    if (type.startsWith("video/")) return "video";
+    if (type.startsWith("audio/")) return "audio";
+  } else {
+    return "temp";
+  }
 });
 
 // 파일 크기 형식화
@@ -85,10 +92,21 @@ const formatFileSize = (bytes: number) => {
 const handleFileChange = async (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files.length > 0) {
-    selectedFile.value = target.files[0];
+    tempFile.value = target.files[0];
+    //매개변수 true는 임시전송이기에 temp=true
+    await uploadToS3(tempFile.value, true);
+  }
+};
 
-    // 파일 선택 시 자동 업로드 처리
-    await uploadToS3(selectedFile.value);
+const confirmFile = async () => {
+  if (tempFile.value) {
+    fileConfirmed.value = true;
+    selectedFile.value = tempFile.value;
+    //매개변수 false는 임시전송이기에 temp=false
+    await uploadToS3(selectedFile.value, false);
+    fileConfirmed.value = false;
+    alert("성공적으로 전송되었습니다");
+    window.location.reload();
   }
 };
 </script>

@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
     });
 
     const body = await readBody(event);
-    const { file, filename, contentType } = body;
+    const { file, filename, contentType, temp } = body;
 
     // 파일 크기 제한 (필요시 조정)
     const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
@@ -65,14 +65,18 @@ export default defineEventHandler(async (event) => {
 
     // 폴더 구조 생성 (파일 타입별로 분류)
     let folderPrefix = "";
-    if (contentType.startsWith("image/")) {
-      folderPrefix = "images/";
-    } else if (contentType.startsWith("video/")) {
-      folderPrefix = "videos/";
-    } else if (contentType.startsWith("audio/")) {
-      folderPrefix = "audios/";
+    if (temp) {
+      folderPrefix = "temp/";
     } else {
-      folderPrefix = "files/";
+      if (contentType.startsWith("image/")) {
+        folderPrefix = "images/";
+      } else if (contentType.startsWith("video/")) {
+        folderPrefix = "videos/";
+      } else if (contentType.startsWith("audio/")) {
+        folderPrefix = "audios/";
+      } else {
+        folderPrefix = "files/";
+      }
     }
 
     const s3Key = `${folderPrefix}${uniqueFileName}`;

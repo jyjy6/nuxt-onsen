@@ -16,7 +16,10 @@ export const useS3Upload = () => {
   // 최대 파일 크기 설정 (클라이언트 측 검증용)
   const MAX_FILE_SIZE = 100 * 1024 * 1024 * 1024;
 
-  const uploadToS3 = async (file: File): Promise<string | null> => {
+  const uploadToS3 = async (
+    file: File,
+    temp: boolean
+  ): Promise<string | null> => {
     isUploading.value = true;
     uploadProgress.value = 0;
     uploadError.value = null;
@@ -45,6 +48,7 @@ export const useS3Upload = () => {
           file: fileBase64,
           filename: file.name,
           contentType: file.type,
+          temp: temp,
         },
         {
           onUploadProgress: (progressEvent) => {
