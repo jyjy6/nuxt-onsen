@@ -58,6 +58,9 @@ const fetchTestMessage = async () => {
         </v-col>
       </v-row>
     </v-container>
+    <v-container>
+      <FileUploadComponent />
+    </v-container>
   </v-main>
 </template>
 

@@ -15,13 +15,14 @@
       <!-- Right button -->
       <v-spacer></v-spacer>
       <div class="right-buttons">
-        <v-btn type="text" to="/">ご利用ガイド</v-btn>
-        <v-btn type="text" to="/about">音泉通販</v-btn>
-        <v-btn type="text" to="/test">音泉チャンネル</v-btn>
-        <v-btn type="text" to="/test">更新情報</v-btn>
-        <v-btn type="text" to="/test">PREMIUM</v-btn>
-        <v-btn type="text" to="/broadcast/list">BroadCast List</v-btn>
-        <v-btn type="text" to="/admin">admin</v-btn>
+        <v-btn
+          v-for="btn in rightButtons"
+          :key="btn.id"
+          :type="btn.btnType"
+          :to="btn.to"
+        >
+          {{ btn.btnTitle }}
+        </v-btn>
         <v-btn type="text" to="/test">
           <v-img
             src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAAUCAYAAACAl21KAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAEqADAAQAAAABAAAAFAAAAAAV6Uf1AAABrUlEQVQ4EZWUzytEURTHZ/wqVixGg1JSsmChKBursbab8WunlFgoG2WDlX+Alf+AERsLoYSSIskGW7HwM5Efk+Lzfc6r23heb0593veec8+dO+ee+148FouNQjW4toez7Qb+GbcR74FFzafhG45hC07hAZIQZnVM3sC8m7SMs2KBcvQc1swPkgqC2ngTStyEBM4dDFqwE/1yfAt7EuepjS+g0ovkPTL4j1Bj8Tk0qMRZy2uyvEDJEl23mTL0DFbNl/RCDlJywkzdU4lDlqSuaOEAdMAbqMuRTLs+Q71lT6P3oA4tWCyyqIO6CjpYdUUdurIxEt1Uov6FX0YL4w/oh4JNi16h0VZOovpxbVKQ6ax043ehCIrhAFR2ZGsnUx3yD3rCVuruKN5nfqjUMnsNfodU4js0g2wcdEVCS9R7dgTqmPsO6VIegspTJ3cgC4GmhCW4hKq8jCS+XpcpizegL6Bz/GMzRJ5A5xBkut2f0GqTI6hKTJjvSYZnDrrdYMBYn5YTKLW5DVRfAs/8Do35gRD1S9wnR9dAqiuS1rkMg8z7XP4OQ58pZrvyMm5/AIh6VCYDGXE0AAAAAElFTkSuQmCC"
@@ -168,6 +169,57 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import type { AxiosInstance } from "axios";
+
+const rightButtons = ref([
+  {
+    id: 0,
+    btnTitle: "ご利用ガイド",
+    btnType: "text",
+    to: "/",
+  },
+  {
+    id: 1,
+    btnTitle: "音泉通販",
+    btnType: "text",
+    to: "/about",
+  },
+  {
+    id: 2,
+    btnTitle: "音泉チャンネル",
+    btnType: "text",
+    to: "/test",
+  },
+  {
+    id: 3,
+    btnTitle: "更新情報",
+    btnType: "text",
+    to: "/test",
+  },
+  {
+    id: 4,
+    btnTitle: "PREMIUM",
+    btnType: "text",
+    to: "/test",
+  },
+  {
+    id: 5,
+    btnTitle: "BroadCast List",
+    btnType: "text",
+    to: "/broadcast/list",
+  },
+  {
+    id: 6,
+    btnTitle: "admin",
+    btnType: "text",
+    to: "/admin",
+  },
+  {
+    id: 7,
+    btnTitle: "テスト",
+    btnType: "text",
+    to: "/test",
+  },
+]);
 
 const router = useRouter();
 const isLoggedIn = ref(false);

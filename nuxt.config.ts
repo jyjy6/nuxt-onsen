@@ -21,6 +21,24 @@ export default defineNuxtConfig({
     port: 3000,
     host: "0.0.0.0",
   },
+  vite: {
+    server: {
+      watch: {
+        usePolling: true,
+        ignored: [
+          "!**/components/**",
+          "!**/pages/**",
+          "!**/server/**",
+          "!**/utils/**",
+          "!**/plugins/**",
+          "!**/coimposables/**",
+          "!**/assets/**",
+          "**/node_modules/**",
+          "**/.git/**",
+        ], // pages 디렉토리만 감시
+      },
+    },
+  },
   nitro: {
     routeRules: {
       "/api/**": { cors: true },

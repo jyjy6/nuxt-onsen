@@ -1,11 +1,9 @@
-version: "3.8"
 services:
   onsen:
     image: onsen:1
     build: .
     ports:
       - "3000"
-      - "24678:24678"
     env_file:
       - .env
     networks:
