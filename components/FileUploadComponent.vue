@@ -37,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineEmits } from "vue";
+import { ref, computed, defineEmits, defineExpose } from "vue";
 import { useS3Upload } from "~/composables/useS3Upload";
 
 const emit = defineEmits(["updateURL"]);
@@ -46,7 +46,6 @@ const { isUploading, uploadProgress, uploadError, uploadedUrl, uploadToS3 } =
   useS3Upload();
 const tempFile = ref<File | null>(null);
 const selectedFile = ref<File | null>(null);
-const fileConfirmed = ref(false);
 
 const fileType = computed(() => {
   if (!tempFile.value) return null;
@@ -66,26 +65,22 @@ const handleFileChange = async (event: Event) => {
   if (target.files && target.files.length > 0) {
     tempFile.value = target.files[0];
     await uploadToS3(tempFile.value, true);
+    emit("updateURL", uploadedUrl.value);
   }
 };
 
 // 전송 버튼 클릭 시 확정된 URL로 변경 후 부모에 전달
 const confirmFile = async () => {
+  console.log("confirmFile 함수 호출됨");
   if (tempFile.value) {
-    fileConfirmed.value = true;
     selectedFile.value = tempFile.value;
     await uploadToS3(selectedFile.value, false);
-
     if (uploadedUrl.value) {
-      emit("updateURL", uploadedUrl.value); // 부모 컴포넌트에 URL 전달
+      emit("updateURL", uploadedUrl.value);
     }
-
-    fileConfirmed.value = false;
-    alert("성공적으로 전송되었습니다");
   }
 };
 
-// 부모에서 접근 가능하도록 `defineExpose`
 defineExpose({ confirmFile });
 </script>
 
