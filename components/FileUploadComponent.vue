@@ -1,3 +1,4 @@
+<!-- FileUploadComponent.vue -->
 <template>
   <div>
     <h2>파일 업로드</h2>
@@ -20,7 +21,6 @@
       <p>업로드 성공!</p>
       <a :href="uploadedUrl" target="_blank">{{ uploadedUrl }}</a>
 
-      <!-- 파일 타입에 따른 미리보기 -->
       <div v-if="fileType === 'image'" class="preview">
         <img
           :src="uploadedUrl"
@@ -28,36 +28,19 @@
           style="max-width: 300px"
         />
       </div>
-
-      <div v-else-if="fileType === 'video'" class="preview">
-        <video controls style="max-width: 300px">
-          <source :src="uploadedUrl" :type="selectedFile?.type" />
-          브라우저가 비디오 태그를 지원하지 않습니다.
-        </video>
-      </div>
-
-      <div v-else-if="fileType === 'audio'" class="preview">
-        <audio controls>
-          <source :src="uploadedUrl" :type="selectedFile?.type" />
-          브라우저가 오디오 태그를 지원하지 않습니다.
-        </audio>
-      </div>
-
-      <div v-else class="preview">
-        <p>파일 이름: {{ selectedFile?.name }}</p>
-        <p>파일 타입: {{ selectedFile?.type || "알 수 없음" }}</p>
-        <p>파일 크기: {{ formatFileSize(selectedFile?.size || 0) }}</p>
-      </div>
     </div>
+    <!-- 
     <v-btn color="green" @click="confirmFile" :disabled="!tempFile">
-      전송
-    </v-btn>
+      업로드 완료!
+    </v-btn> -->
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, defineEmits } from "vue";
 import { useS3Upload } from "~/composables/useS3Upload";
+
+const emit = defineEmits(["updateURL"]);
 
 const { isUploading, uploadProgress, uploadError, uploadedUrl, uploadToS3 } =
   useS3Upload();
@@ -65,50 +48,45 @@ const tempFile = ref<File | null>(null);
 const selectedFile = ref<File | null>(null);
 const fileConfirmed = ref(false);
 
-// 파일 타입 감지
 const fileType = computed(() => {
   if (!tempFile.value) return null;
   const type = tempFile.value.type;
-  if (fileConfirmed) {
-    if (type.startsWith("image/")) return "image";
-    if (type.startsWith("video/")) return "video";
-    if (type.startsWith("audio/")) return "audio";
-  } else {
-    return "temp";
+  if (type.startsWith("image/")) {
+    return "image";
+  } else if (type.startsWith("video/")) {
+    return "video";
+  } else if (type.startsWith("audio/")) {
+    return "audio";
   }
 });
 
-// 파일 크기 형식화
-const formatFileSize = (bytes: number) => {
-  if (bytes === 0) return "0 Bytes";
-
-  const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-};
-
+// 파일 선택 시 임시 업로드
 const handleFileChange = async (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files.length > 0) {
     tempFile.value = target.files[0];
-    //매개변수 true는 임시전송이기에 temp=true
     await uploadToS3(tempFile.value, true);
   }
 };
 
+// 전송 버튼 클릭 시 확정된 URL로 변경 후 부모에 전달
 const confirmFile = async () => {
   if (tempFile.value) {
     fileConfirmed.value = true;
     selectedFile.value = tempFile.value;
-    //매개변수 false는 임시전송이기에 temp=false
     await uploadToS3(selectedFile.value, false);
+
+    if (uploadedUrl.value) {
+      emit("updateURL", uploadedUrl.value); // 부모 컴포넌트에 URL 전달
+    }
+
     fileConfirmed.value = false;
     alert("성공적으로 전송되었습니다");
-    window.location.reload();
   }
 };
+
+// 부모에서 접근 가능하도록 `defineExpose`
+defineExpose({ confirmFile });
 </script>
 
 <style scoped>

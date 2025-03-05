@@ -8,13 +8,16 @@
         required
       ></v-text-field>
 
+      <!-- FileUploadComponent에서 업로드된 URL을 받음 -->
+      <file-upload-component @updateURL="updateURL" />
+
       <v-text-field
         v-model="form.mainImg"
         label="진행자 이미지"
         :rules="[rules.required, rules.url]"
         required
       ></v-text-field>
-      <!-- 지금은 진행자이미지를 링크를 직접 폼에 입력하는방식이지만 나중에는 직접업로드버튼을 눌러서 S3에 업로드 할 수 있게 변경 -->
+
       <v-btn :disabled="!valid" @click="submitContentForm" color="primary">
         저장
       </v-btn>
@@ -44,6 +47,11 @@ const rules = {
   required: (value: string) => !!value || "필수 입력입니다.",
   url: (value: string) =>
     /^https?:\/\/.+/.test(value) || "유효한 URL을 입력해주세요.",
+};
+
+// FileUploadComponent에서 URL을 업데이트하는 함수
+const updateURL = (url: string) => {
+  form.value.mainImg = url;
 };
 
 const submitContentForm = async () => {

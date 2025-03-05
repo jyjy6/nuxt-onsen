@@ -1,5 +1,6 @@
-import { defineEventHandler, getQuery } from "h3";
+import { defineEventHandler, getQuery, readBody } from "h3";
 import PersonalityModel from "../models/personality";
+import { AxiosError } from "axios";
 
 export default defineEventHandler(async (event) => {
   const method = event.method;
@@ -28,7 +29,12 @@ export default defineEventHandler(async (event) => {
       const newPersonality = await PersonalityModel.create(body);
       return { success: true, data: newPersonality };
     } catch (error) {
-      return { success: false, error };
+      // Log the detailed error
+      console.error("Error creating personality:", error);
+      if (error instanceof AxiosError) {
+        return { success: false, error: error.message };
+      }
+      return { success: false, error: "Unknown error occurred" };
     }
   }
 });

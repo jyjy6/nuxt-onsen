@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
     const { file, filename, contentType, temp } = body;
 
     // 파일 크기 제한 (필요시 조정)
-    const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+    const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB
 
     // base64 디코딩
     const fileData = file.replace(/^data:.*;base64,/, "");
@@ -92,7 +92,7 @@ export default defineEventHandler(async (event) => {
         // ACL: "public-read", // 필요에 따라 접근 권한 설정
       },
       // 청크 단위로 분할 업로드 (대용량 파일용)
-      partSize: 5 * 1024 * 1024, // 각 파트 5MB
+      partSize: 500 * 1024 * 1024, // 각 파트 500MB
       leavePartsOnError: false, // 에러 발생 시 업로드된 부분 삭제
     });
 

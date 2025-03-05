@@ -25,6 +25,7 @@
         required
       ></v-select>
 
+      <file-upload-component @updateURL="updateURL" />
       <v-text-field
         v-model="form.mainImg"
         label="방송 대문 이미지 링크"
@@ -93,6 +94,11 @@ const rules = {
     /^https?:\/\/.+/.test(value) || "유효한 URL을 입력해주세요.",
 };
 
+// FileUploadComponent에서 URL을 업데이트하는 함수
+const updateURL = (url: string) => {
+  form.value.mainImg = url;
+};
+
 const submitContentForm = async () => {
   try {
     const response = await axios.post("/api/contents", form.value);
@@ -106,6 +112,7 @@ const submitContentForm = async () => {
       date: "",
       info: "",
     };
+    window.location.reload();
   } catch (error) {
     console.error("저장 실패:", error);
   }

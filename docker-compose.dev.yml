@@ -13,6 +13,7 @@ services:
     networks:
       - mynet1
     command: npm run dev
+    restart: always
 
   nginx:
     build:
