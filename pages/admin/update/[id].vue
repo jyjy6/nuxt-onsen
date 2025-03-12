@@ -1,47 +1,10 @@
 <template>
   <v-container>
-    <v-form v-model="valid" ref="contentForm">
-      <v-text-field
-        v-model="form.contentsName"
-        label="방송 이름"
-        :rules="[rules.required]"
-        required
-      ></v-text-field>
-
-      <v-select
-        v-model="form.personality"
-        :items="personalities"
-        label="진행자 (복수 선택 가능)"
-        :rules="[rules.required]"
-        multiple
-        required
-      ></v-select>
-
-      <v-select
-        v-model="form.date"
-        :items="dates"
-        label="방송 요일"
-        :rules="[rules.required]"
-        required
-      ></v-select>
-
-      <v-text-field
-        v-model="form.mainImg"
-        label="방송 대문 이미지 링크"
-        :rules="[rules.required, rules.url]"
-        required
-      ></v-text-field>
-
-      <v-text-field
-        v-model="form.info"
-        label="방송설명"
-        required
-      ></v-text-field>
-
-      <v-btn :disabled="!valid" @click="submitContentForm" color="primary">
-        저장
-      </v-btn>
-    </v-form>
+    <FormComponent
+      :fields="contentFields"
+      :form-data="formData"
+      :apiUrl="apiUrl"
+    />
   </v-container>
 </template>
 
@@ -49,40 +12,59 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
+import type { Form } from "@/types/formTypes";
 
 definePageMeta({
   layout: "admin",
 });
 
-interface ContentForm {
-  contentsName: string;
-  personality: string[];
-  mainImg: string;
-  date: string;
-  info: string;
-}
-
-const valid = ref(false);
-const form = ref<ContentForm>({
-  contentsName: "",
-  personality: [],
-  mainImg: "",
-  date: "",
-  info: "",
-});
-
-const personalities = ref<string[]>([]);
-const dates = ["月", "火", "水", "木", "金", "土", "日"];
 const route = useRoute();
-const router = useRouter();
+const personalities = ref<string[]>([]);
+const formData = ref<Form>();
+const apiUrl = `/api/contents/${route.params.id}`;
 
-const rules = {
-  required: (value: string) => !!value || "필수 입력입니다.",
-  url: (value: string) =>
-    /^https?:\/\/.+/.test(value) || "유효한 URL을 입력해주세요.",
-};
+const contentFields = ref([
+  {
+    name: "contentsName",
+    label: "방송 이름",
+    type: "text",
+    rules: [(v: string) => !!v || "필수 입력입니다."],
+  },
+  {
+    name: "personality",
+    label: "진행자 (복수 선택 가능)",
+    type: "select",
+    items: [],
+    multiple: true,
+    rules: [(v: string) => !!v || "필수 입력입니다."],
+  },
+  {
+    name: "date",
+    label: "방송 요일",
+    type: "select",
+    items: ["月", "火", "水", "木", "金", "土", "日"],
+    rules: [(v: string) => !!v || "필수 입력입니다."],
+  },
+  {
+    name: "contentsTag",
+    label: "방송 태그",
+    type: "select",
+    items: ["新番組", "PREMIUM", "ランキング", "アニメ・ゲーム", "検索"],
+    multiple: true,
+  },
+  {
+    name: "mainImg",
+    label: "방송 대문 이미지 링크",
+    type: "text",
+    rules: [
+      (v: string) => !!v || "필수 입력입니다.",
+      (v: string) => /^https?:\/\/.+/.test(v) || "유효한 URL을 입력해주세요.",
+    ],
+  },
+  { name: "info", label: "방송 설명", type: "text" },
+]);
 
-// 진행자 목록 불러오기 및 데이터 로드
+// 데이터 로딩
 onMounted(async () => {
   try {
     // 진행자 목록 불러오기
@@ -91,29 +73,17 @@ onMounted(async () => {
       personalities.value = personalityResponse.data.data.map(
         (item: { personalityName: string }) => item.personalityName
       );
+      contentFields.value.find((field) => field.name === "personality")!.items =
+        personalities.value;
     }
 
-    // 콘텐츠 데이터 불러오기
-    const contentResponse = await axios.get(`/api/contents/${route.params.id}`);
+    // 기존 콘텐츠 데이터 불러오기
+    const contentResponse = await axios.get(apiUrl);
     if (contentResponse.data.success) {
-      form.value = contentResponse.data.data; // 초기 데이터 설정
+      formData.value = { ...contentResponse.data.data }; // formData에 기존 데이터 넣기
     }
   } catch (error) {
     console.error("데이터 불러오기 실패:", error);
   }
 });
-
-// 수정된 데이터 저장
-const submitContentForm = async () => {
-  try {
-    const response = await axios.put(
-      `/api/contents/${route.params.id}`,
-      form.value
-    );
-    alert("저장 성공: " + response.data);
-    router.push("/broadcast/list"); // 저장 후 목록으로 이동
-  } catch (error) {
-    console.error("저장 실패:", error);
-  }
-};
 </script>

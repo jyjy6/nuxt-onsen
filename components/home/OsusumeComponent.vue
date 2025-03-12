@@ -19,7 +19,11 @@
           <v-row align="center" no-gutters>
             <!-- 왼쪽: 이미지 -->
             <v-col cols="4">
-              <v-img :src="banner.mainImg" alt="Banner Image" />
+              <v-img
+                :src="banner.mainImg"
+                alt="Banner Image"
+                style="height: 200px"
+              />
             </v-col>
 
             <!-- 오른쪽: 텍스트와 버튼 -->

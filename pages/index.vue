@@ -60,7 +60,6 @@ const swiperOptions2 = {
     disableOnInteraction: false,
   },
 };
-
 const items2 = ref([
   {
     id: 4,
@@ -95,7 +94,6 @@ const swiperOptions3 = {
   pagination: { clickable: true },
   dots: true,
 };
-
 const items3 = ref([
   {
     id: 7,
@@ -135,6 +133,7 @@ interface Content {
   _id: string;
   contentsName: string;
   personality: string[];
+  contentsTag: string[];
   mainImg: string;
   date: string;
 }
@@ -163,13 +162,10 @@ const setActiveButton = (index: number) => {
 // ================================================
 
 // 카테고리에 맞는 아이템들ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-const items5 = ref<Content[]>([]);
-
+const contentsList = ref<Content[]>([]);
 onMounted(async () => {
   const today = new Date();
   const dayOfWeekIndex = today.getDay(); // 0(일요일)부터 6(토요일)까지 반환
-
-  console.log(dayOfWeekIndex);
   // 요일에 맞는 카테고리 이름으로 변환
   const categoryMap: { [key: number]: string } = {
     1: "月",
@@ -177,16 +173,16 @@ onMounted(async () => {
     3: "水",
     4: "木",
     5: "金",
-    6: "土・日",
-    0: "土・日",
+    6: "土",
+    0: "日",
   };
 
   const category: string = categoryMap[dayOfWeekIndex]; // 月~日 까지
   await fetchCategoryData(category); // 오늘의 요일에 맞는 카테고리 데이터 가져오기
 
   if (dayOfWeekIndex == 0) {
-    setCategoryActive(5);
     //일요일 일 시 CategoryActive를 5로지정하여 cateGoryButtons의 토,일으로 설정
+    setCategoryActive(5);
   } else {
     setCategoryActive(dayOfWeekIndex - 1);
     //월~토요일은 일요일을 뺀 인덱스를 categoryButtons에서 골라야하므로 -1
@@ -198,7 +194,32 @@ const fetchCategoryData = async (category: string) => {
     const response = await axios.get(
       `/api/contents/getContents?date=${category}`
     ); // API 요청
-    items5.value = response.data.data; // 가져온 데이터를 items5에 바인딩
+    contentsList.value = response.data.data; // 가져온 데이터를 contentsList에 바인딩
+
+    if (category === "土") {
+      const saturdaySundayData = await axios.get(
+        `/api/contents/getContents?date=日`
+      );
+      contentsList.value.push(...saturdaySundayData.data.data);
+    } else if (category === "日") {
+      const saturdaySundayData = await axios.get(
+        `/api/contents/getContents?date=土`
+      );
+      contentsList.value.push(...saturdaySundayData.data.data);
+      //사실 일요일 로직은 필요없지만 안전을위해서 넣음
+      //-> 필요없는이유는 categoryButtons에서 토,일요일을 나누지않고 土・日통합해서 최초 axios요청을 토요일 데이터만 불러오고있기에 이 if문에선 추가로 일요일 데이터만 불러오면되기 때문에.
+    }
+  } catch (error) {
+    console.error("데이터를 가져오는 중 오류 발생:", error);
+  }
+};
+
+const fetchContentsTagData = async (category: string) => {
+  try {
+    const response = await axios.get(
+      `/api/contents/getContents?contentsTag=${category}`
+    ); // API 요청
+    contentsList.value = response.data.data; // 가져온 데이터를 contentsList에 바인딩
   } catch (error) {
     console.error("데이터를 가져오는 중 오류 발생:", error);
   }
@@ -230,12 +251,66 @@ const setCategoryActive = (index: number) => {
     setTimeout(() => {
       button.active = i === index;
       if (button.active) {
-        fetchCategoryData(button.label); // 클릭한 버튼의 label에 맞는 데이터 가져오기
+        if (i == 5) {
+          fetchCategoryData("土");
+        } else {
+          if (index < 6) {
+            fetchCategoryData(button.label); // 클릭한 버튼의 label의 요일에 맞는 데이터 가져오기
+          } else {
+            fetchContentsTagData(button.label); //클릭한 버튼의 Label의 태그에 맞는 데이터
+          }
+        }
       }
     }, 120);
   });
 };
 // ================================================
+
+interface Episode {
+  _id: string;
+  contentsCode: string;
+  mainImg: string;
+  episode: string;
+  episodeName: string;
+  contentsLink: string;
+  omake: string;
+  guest?: string[];
+  date: string;
+  uploadDate: string;
+}
+const randomEpisode = ref<Episode>();
+const fetchRandomEpisode = async () => {
+  try {
+    const response = await axios.get<{ data: Episode }>("/api/episodes");
+    randomEpisode.value = response.data.data;
+  } catch (error) {
+    console.error("랜덤 에피소드를 가져오는 데 실패했습니다:", error);
+  }
+};
+
+onMounted(async () => {
+  await fetchRandomEpisode(); // ✅ 데이터를 가져올 때까지 기다림
+  console.log("랜덤 에피소드:", randomEpisode.value);
+  console.log("ID:", randomEpisode.value?._id);
+  console.log("에피소드 이름:", randomEpisode.value?.episodeName);
+});
+const isAudio = (src: string | undefined) => {
+  if (src) {
+    return src.toLowerCase().endsWith(".mp3");
+  }
+};
+const getEmbedUrl = (url: string): string | null => {
+  if (url.includes("youtube.com")) {
+    // youtube.com/watch?v=IoUYWe5t_-A 형식
+    const urlParams = new URLSearchParams(new URL(url).search);
+    return urlParams.get("v");
+  } else if (url.includes("youtu.be")) {
+    // youtu.be/IoUYWe5t_-A 형식
+    const videoId = url.split("/").pop();
+    return videoId || null;
+  }
+  return null; // 유효하지 않은 링크인 경우
+};
 </script>
 
 <template>
@@ -249,16 +324,61 @@ const setCategoryActive = (index: number) => {
           margin: 0 auto;
           display: flex;
           justify-content: center;
+          gap: 20px;
         "
       >
-        <div class="contents-col" style="width: 48%; margin: 0">
+        <!-- 메인화면 좌측 비디오 -->
+        <div class="contents-col" style="width: 48%">
           <v-card
-            class="d-flex justify-center"
+            class="d-flex align-center justify-center"
             style="height: 100%; width: 100%; margin: 0"
           >
-            <v-img
-              src="https://d3bzklg4lms4gh.cloudfront.net/program_info/image/default/production/11/3d/d38f52419b456ac453c1a0dfaba0f7c9b66b/image?v=1731549397"
-            />
+            <v-row
+              class="d-flex align-center justify-center"
+              style="width: 100%; height: 100%"
+            >
+              <v-col
+                v-if="
+                  randomEpisode?.contentsLink.includes('youtube') ||
+                  randomEpisode?.contentsLink.includes('youtu.be')
+                "
+                class="d-flex justify-center align-center"
+                style="display: flex; width: 100%; height: 100%"
+              >
+                <iframe
+                  :src="`https://www.youtube.com/embed/${getEmbedUrl(
+                    randomEpisode.contentsLink
+                  )}`"
+                  class="episode-video-container"
+                  title="YouTube Video"
+                  frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  allowfullscreen
+                  style="max-width: 100%; max-height: 100%"
+                ></iframe>
+              </v-col>
+
+              <v-col
+                v-else
+                class="d-flex justify-center align-center"
+                style="display: flex; width: 100%; height: 100%"
+              >
+                <video
+                  :src="randomEpisode?.contentsLink"
+                  class="episode-video-container"
+                  controls
+                  :style="
+                    isAudio(randomEpisode?.contentsLink)
+                      ? {
+                          background: `url(${randomEpisode?.mainImg}) center/cover no-repeat`,
+                        }
+                      : {}
+                  "
+                  style="max-width: 100%; max-height: 100%"
+                ></video>
+              </v-col>
+            </v-row>
           </v-card>
         </div>
 
@@ -331,10 +451,10 @@ const setCategoryActive = (index: number) => {
           </div>
         </div>
 
-        <!-- items5 표시 -->
+        <!-- contentsList 표시 -->
         <v-row class="mt-4">
           <v-col
-            v-for="(item, index) in items5"
+            v-for="(item, index) in contentsList"
             :key="index"
             style="max-width: calc(100% / 3.5); flex: 0 0 calc(100% / 3.5)"
           >
@@ -354,7 +474,7 @@ const setCategoryActive = (index: number) => {
               <!-- 카드 텍스트 -->
               <v-card-text>
                 <div class="d-flex flex-column mb-2">
-                  <p class="mb-1 font-weight-bold">출연자:</p>
+                  <p class="mt-2 mb-1 font-weight-bold">출연자:</p>
                   <div class="d-flex flex-wrap">
                     <v-chip
                       v-for="(person, index) in item.personality"
@@ -365,6 +485,18 @@ const setCategoryActive = (index: number) => {
                       pill
                     >
                       {{ person }}
+                    </v-chip>
+                  </div>
+                  <div class="d-flex flex-wrap">
+                    <v-chip
+                      v-for="(tag, index) in item.contentsTag"
+                      :key="index"
+                      class="ma-1"
+                      color="blue"
+                      text-color="white"
+                      pill
+                    >
+                      {{ tag }}
                     </v-chip>
                   </div>
                 </div>
@@ -408,5 +540,10 @@ const setCategoryActive = (index: number) => {
   line-height: 1.5;
   max-height: 3em; /* line-height * 표시할 줄 수 */
   margin-bottom: 30px;
+}
+.episode-video-container {
+  height: 100%;
+  width: 80%;
+  margin: 0 auto;
 }
 </style>

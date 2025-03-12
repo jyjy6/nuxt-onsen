@@ -21,13 +21,29 @@
       <p>업로드 성공!</p>
       <a :href="uploadedUrl" target="_blank">{{ uploadedUrl }}</a>
 
-      <div v-if="fileType === 'image'" class="preview">
-        <img
-          :src="uploadedUrl"
-          alt="업로드된 이미지"
-          style="max-width: 300px"
-        />
-      </div>
+      <!-- 이미지 미리보기 -->
+      <v-img
+        v-if="fileType === 'image'"
+        :src="uploadedUrl"
+        alt="업로드된 이미지"
+        max-width="300"
+        class="preview"
+      />
+      <!-- 비디오 미리보기 -->
+      <video
+        v-else-if="fileType === 'video'"
+        :src="uploadedUrl"
+        controls
+        class="preview"
+        style="max-width: 400px"
+      />
+      <!-- 오디오 미리보기 -->
+      <audio
+        v-else-if="fileType === 'audio'"
+        :src="uploadedUrl"
+        controls
+        class="preview"
+      />
     </div>
     <!-- 
     <v-btn color="green" @click="confirmFile" :disabled="!tempFile">
@@ -39,6 +55,10 @@
 <script setup lang="ts">
 import { ref, computed, defineEmits, defineExpose } from "vue";
 import { useS3Upload } from "~/composables/useS3Upload";
+
+const props = defineProps<{
+  fieldName: string;
+}>();
 
 const emit = defineEmits(["updateURL"]);
 
@@ -65,7 +85,7 @@ const handleFileChange = async (event: Event) => {
   if (target.files && target.files.length > 0) {
     tempFile.value = target.files[0];
     await uploadToS3(tempFile.value, true);
-    emit("updateURL", uploadedUrl.value);
+    emit("updateURL", { fieldName: props.fieldName, url: uploadedUrl.value });
   }
 };
 
@@ -76,7 +96,7 @@ const confirmFile = async () => {
     selectedFile.value = tempFile.value;
     await uploadToS3(selectedFile.value, false);
     if (uploadedUrl.value) {
-      emit("updateURL", uploadedUrl.value);
+      emit("updateURL", { fieldName: props.fieldName, url: uploadedUrl.value });
     }
   }
 };

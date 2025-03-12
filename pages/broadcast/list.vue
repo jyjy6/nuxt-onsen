@@ -39,6 +39,9 @@
         <v-btn :to="`/admin/update/${content._id}`" color="primary">
           수정
         </v-btn>
+        <v-btn :to="`/admin/add/episodes/${content._id}`" color="warning">
+          에피소드 추가
+        </v-btn>
       </v-col>
     </v-row>
   </v-container>

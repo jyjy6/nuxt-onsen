@@ -19,6 +19,7 @@
       <!-- 방송 이미지 -->
       <v-col cols="12" md="8" class="mb-6">
         <v-img
+          v-if="!isPlay"
           :src="content.mainImg"
           height="400"
           class="rounded-lg shadow-lg"
@@ -66,13 +67,24 @@
           </div>
 
           <!-- 날짜 칩 -->
-          <v-chip color="secondary" class="mb-4">
+          <v-chip color="secondary">
             <v-icon start icon="mdi-calendar"></v-icon>
             {{ content.date }}
           </v-chip>
+          <div class="pt-2">
+            <v-chip
+              v-for="(tag, index) in content.contentsTag"
+              :key="index"
+              color="blue"
+              class="mr-2"
+              pill
+            >
+              {{ tag }}
+            </v-chip>
+          </div>
 
           <!-- 방송 설명 -->
-          <p class="text-body-1 text-justify text-secondary">
+          <p class="mt-5 text-body-1 text-justify text-secondary">
             {{ content.info }}
           </p>
         </v-card>
@@ -85,11 +97,128 @@
           color="primary"
           variant="elevated"
           size="large"
-          class="rounded-lg"
+          class="rounded-lg mr-5"
         >
           <v-icon start icon="mdi-pencil"></v-icon>
           수정
         </v-btn>
+        <v-btn
+          :to="`/admin/add/episodes/${content._id}`"
+          color="warning"
+          size="large"
+        >
+          에피소드 추가
+        </v-btn>
+      </v-col>
+    </v-row>
+
+    <h2 style="margin: 3%">에피소드 목록</h2>
+    <v-row>
+      <v-container v-if="!episodes.length" class="text-center my-10">
+        <v-img
+          src="https://cdn-icons-png.flaticon.com/512/4076/4076470.png"
+          max-width="200"
+          class="mx-auto"
+        />
+        <p class="text-h6 mt-3">아직 에피소드가 없습니다!</p>
+        <p class="text-body-2 text-grey-darken-1">
+          새로운 에피소드를 추가해보세요.
+        </p>
+        <v-btn
+          color="primary"
+          class="mt-3"
+          :to="`/admin/add/episodes/${content._id}`"
+        >
+          + 에피소드 추가하기
+        </v-btn>
+      </v-container>
+
+      <v-col v-for="(episode, i) in episodes" :key="i" cols="12" sm="6" md="4">
+        <v-card class="ma-3" :elevation="4">
+          <!-- 썸네일 이미지 -->
+          <v-img
+            :src="episode.mainImg"
+            alt="썸네일 이미지"
+            height="200px"
+            class="mb-2"
+          >
+            <!-- 썸네일에 오버레이 추가 -->
+            <template v-slot:placeholder>
+              <v-row class="fill-height ma-0" align="center" justify="center">
+                <v-progress-circular indeterminate color="grey lighten-5" />
+              </v-row>
+            </template>
+          </v-img>
+
+          <v-card-title>
+            <span>{{ episode.episodeName }}</span>
+          </v-card-title>
+
+          <v-card-subtitle>방송날짜: {{ episode.date }}</v-card-subtitle>
+          <v-card-subtitle
+            >업로드날짜: {{ episode.uploadDate }}</v-card-subtitle
+          >
+
+          <v-card-text>
+            <p>
+              <strong>내용 링크:</strong>
+              <a :href="episode.contentsLink" target="_blank">링크 열기</a>
+            </p>
+            <p v-if="episode.omake">
+              <strong>오마케:</strong> {{ episode.omake }}
+            </p>
+
+            <!-- 게스트 정보가 있을 경우 출력 -->
+            <p v-if="episode.guest">
+              <strong>게스트:</strong> {{ episode.guest }}
+            </p>
+            <p v-else style="min-height: 32px"></p>
+
+            <!-- 콘텐츠 링크와 오마케를 동영상/오디오로 표시 -->
+            <div v-if="episode.contentsLink" style="margin-top: 20px">
+              <v-row>
+                <v-col
+                  v-if="
+                    episode.contentsLink.includes('youtube') ||
+                    episode.contentsLink.includes('youtu.be')
+                  "
+                >
+                  <iframe
+                    :src="`https://www.youtube.com/embed/${getEmbedUrl(
+                      episode.contentsLink
+                    )}`"
+                    class="episode-video-container"
+                    title="YouTube Video"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerpolicy="strict-origin-when-cross-origin"
+                    allowfullscreen
+                  ></iframe>
+                </v-col>
+
+                <v-col v-else class="mt-3">
+                  <video
+                    :src="episode.contentsLink"
+                    class="episode-video-container"
+                    controls
+                    :style="
+                      isAudio(episode.contentsLink)
+                        ? {
+                            background: `url(${episode.mainImg}) center/cover no-repeat`,
+                          }
+                        : {}
+                    "
+                  ></video>
+                </v-col>
+              </v-row>
+            </div>
+          </v-card-text>
+
+          <v-card-actions>
+            <!-- 추가적인 액션버튼을 넣을 수 있는 공간 -->
+            <v-btn>더보기</v-btn>
+          </v-card-actions>
+        </v-card>
       </v-col>
     </v-row>
   </v-container>
@@ -108,9 +237,23 @@ interface Content {
   contentsName: string;
   mainImg: string;
   personality: string[];
+  contentsTag: string[];
   date: string;
   info: string;
 }
+interface Episode {
+  _id: string;
+  contentsCode: string;
+  mainImg: string;
+  episode: string;
+  episodeName: string;
+  contentsLink: string;
+  omake: string;
+  guest?: string[];
+  date: string;
+  uploadDate: string;
+}
+const episodes = ref<Episode[]>([]);
 
 onMounted(async () => {
   try {
@@ -122,6 +265,28 @@ onMounted(async () => {
     console.error("컨텐츠를 불러오는데 실패했습니다:", error);
   }
 });
+onMounted(async () => {
+  try {
+    const response = await axios.get<{ data: Episode[] }>(
+      `/api/episodes/${route.params.id}`
+    );
+    episodes.value = response.data.data;
+  } catch (error) {
+    console.error("에피소드를 찾아오는데 실패했습니다:", error);
+  }
+});
+const getEmbedUrl = (url: string): string | null => {
+  if (url.includes("youtube.com")) {
+    // youtube.com/watch?v=IoUYWe5t_-A 형식
+    const urlParams = new URLSearchParams(new URL(url).search);
+    return urlParams.get("v");
+  } else if (url.includes("youtu.be")) {
+    // youtu.be/IoUYWe5t_-A 형식
+    const videoId = url.split("/").pop();
+    return videoId || null;
+  }
+  return null; // 유효하지 않은 링크인 경우
+};
 
 interface PersonInfo {
   _id: string;
@@ -166,6 +331,11 @@ const personInfo = async (personality: string, event: any) => {
 const closeModal = () => {
   modalVisible.value = false;
 };
+
+const isPlay = ref(false);
+const isAudio = (src: string): boolean => {
+  return src.toLowerCase().endsWith(".mp3");
+};
 </script>
 
 <style scoped>
@@ -184,5 +354,26 @@ const closeModal = () => {
   z-index: 9999; /* z-index 값 증가 */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   width: 300px;
+}
+.v-card {
+  background-color: #fafafa;
+  border-radius: 12px;
+}
+
+.v-card-title {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.v-card-subtitle {
+  font-size: 14px;
+  color: #888;
+}
+.episode-video-container {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+.audio-background {
+  background: url(`${}`) center/cover no-repeat;
 }
 </style>

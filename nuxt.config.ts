@@ -26,13 +26,14 @@ export default defineNuxtConfig({
       watch: {
         usePolling: true,
         ignored: [
-          "!**/components/**",
-          "!**/pages/**",
-          "!**/server/**",
-          "!**/utils/**",
-          "!**/plugins/**",
-          "!**/coimposables/**",
-          "!**/assets/**",
+          // "!**/components/**",
+          // "!**/pages/**",
+          // "!**/server/**",
+          // "!**/utils/**",
+          // "!**/plugins/**",
+          // "!**/coimposables/**",
+          // "!**/assets/**",
+          // "!**/types/**",
           "**/node_modules/**",
           "**/.git/**",
         ], // pages 디렉토리만 감시

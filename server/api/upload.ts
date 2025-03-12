@@ -1,8 +1,8 @@
-// server/api/upload.ts - 대용량 파일 처리 최적화
+// server/api/upload.ts
 import { S3Client } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import { defineEventHandler, readBody } from "h3";
-// 파일 타입에 따른 Content-Type 매핑 (필요시 확장)
+
 const getMimeType = (fileType: string) => {
   const mimeTypes: Record<string, string> = {
     "image/jpeg": "image/jpeg",
@@ -81,6 +81,9 @@ export default defineEventHandler(async (event) => {
 
     const s3Key = `${folderPrefix}${uniqueFileName}`;
 
+    // 한글 파일명을 URL 인코딩하여 처리
+    const encodedFilename = encodeURIComponent(filename);
+
     const upload = new Upload({
       client: s3Client,
       params: {
@@ -88,8 +91,7 @@ export default defineEventHandler(async (event) => {
         Key: s3Key,
         Body: buffer,
         ContentType: getMimeType(contentType),
-        ContentDisposition: `inline; filename="${filename}"`,
-        // ACL: "public-read", // 필요에 따라 접근 권한 설정
+        ContentDisposition: `inline; filename="${encodedFilename}"; filename*=UTF-8''${encodedFilename}`,
       },
       // 청크 단위로 분할 업로드 (대용량 파일용)
       partSize: 500 * 1024 * 1024, // 각 파트 500MB
