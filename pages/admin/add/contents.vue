@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container v-if="!isLoading">
     <FormComponent :fields="contentFields" apiUrl="/api/contents" />
   </v-container>
 </template>
@@ -13,8 +13,10 @@ definePageMeta({
 });
 
 const personalities = ref<string[]>([]);
+const isLoading = ref(false);
 
 onMounted(async () => {
+  isLoading.value = true;
   try {
     const response = await axios.get("/api/personality");
     if (response.data.success) {
@@ -27,6 +29,8 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error("진행자 목록 가져오기 실패:", error);
+  } finally {
+    isLoading.value = false;
   }
 });
 
@@ -57,7 +61,7 @@ const contentFields = [
     label: "방송 태그",
     type: "select",
     items: ["新番組", "PREMIUM", "ランキング", "アニメ・ゲーム", "検索"],
-    multiple:true,
+    multiple: true,
   },
   {
     name: "mainImg",

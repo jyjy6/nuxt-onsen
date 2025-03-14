@@ -19,7 +19,7 @@
           style="margin-top: 10px"
         />
         <v-text-field
-          v-if="field.type === 'text' || 'date'"
+          v-if="field.type === 'text' || field.type === 'date'"
           v-model="form[field.name]"
           :label="field.label"
           :rules="field.rules || []"
@@ -27,14 +27,19 @@
           required
         />
 
-        <v-select
+        <v-autocomplete
           v-else-if="field.type === 'select'"
           v-model="form[field.name]"
           :items="field.items"
           :label="field.label"
           :rules="field.rules || []"
           :multiple="field.multiple || false"
+          :filter="customFilter"
+          clearable
+          autocomplete="off"
+          chips
           required
+          @update:search="handleSearch"
         />
       </div>
 
@@ -48,6 +53,23 @@
 <script setup lang="ts">
 import { ref, defineProps } from "vue";
 import axios from "axios";
+
+const search = ref<string>(""); // 검색어 상태 추가
+
+// 커스텀 필터 함수 타입 명시
+const customFilter = (
+  queryText: string,
+  itemText: { value: string }
+): boolean => {
+  const text = itemText.value.toLowerCase();
+  const searchText = queryText.toLowerCase();
+  return text.includes(searchText);
+};
+
+// 검색 핸들러 추가
+const handleSearch = (val: string) => {
+  search.value = val;
+};
 
 const props = defineProps<{
   //수정시에 들어오는 기존 폼의 데이타
