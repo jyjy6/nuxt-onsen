@@ -43,6 +43,31 @@ export default defineEventHandler(async (event) => {
       }
       return { success: false, error: "Unknown error occurred" };
     }
+  } else if (event.method === "DELETE") {
+    try {
+      console.log("이벤트메소드:" + event.method);
+      // _id로 콘텐츠 찾기
+      const content = await ContentModel.findById(id);
+
+      if (!content) {
+        return {
+          statusCode: 404,
+          body: { message: "콘텐츠를 찾을 수 없습니다." },
+        };
+      }
+      await ContentModel.deleteOne({ _id: id });
+      return {
+        success: true,
+        statusCode: 200,
+        body: { message: "콘텐츠가 삭제되었습니다." },
+      };
+    } catch (error) {
+      console.error("콘텐츠 삭제 실패:", error);
+      return {
+        statusCode: 500,
+        body: { message: "서버 오류로 콘텐츠 삭제에 실패했습니다." },
+      };
+    }
   } else {
     // 지원되지 않는 메서드
     return { success: false, error: "Method not allowed" };

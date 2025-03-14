@@ -42,6 +42,7 @@
         <v-btn :to="`/admin/add/episodes/${content._id}`" color="warning">
           에피소드 추가
         </v-btn>
+        <DeleteButtonComponent :URL="`/api/contents/${content._id}`" />
       </v-col>
     </v-row>
   </v-container>
