@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import axios from "axios"; // 직접 axios를 import
+import { useModalStore } from "~/store/modal";
 
 // 응답 데이터의 타입 정의
 interface ApiResponse {
@@ -22,6 +23,8 @@ const fetchTestMessage = async () => {
     console.error(error);
   }
 };
+
+const modalStore = useModalStore;
 </script>
 
 <template>
@@ -36,7 +39,6 @@ const fetchTestMessage = async () => {
           ></v-text-field>
         </v-col>
       </v-row>
-
       <v-row>
         <v-col cols="12">
           <!-- API 요청 버튼 -->
@@ -57,9 +59,6 @@ const fetchTestMessage = async () => {
           </v-alert>
         </v-col>
       </v-row>
-    </v-container>
-    <v-container>
-      <FileUploadComponent />
     </v-container>
   </v-main>
 </template>

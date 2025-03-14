@@ -2,6 +2,7 @@
 
 export default defineNuxtConfig({
   compatibilityDate: "2024-04-03",
+  modules: ["@pinia/nuxt"],
   devtools: { enabled: true },
   css: ["vuetify/lib/styles/main.css", "@mdi/font/css/materialdesignicons.css"], // Vuetify 기본 CSS 추가
   build: {
@@ -10,6 +11,7 @@ export default defineNuxtConfig({
   plugins: [
     "~/plugins/axios.ts", // axios 플러그인
     "~/plugins/trackIp.client.ts", // trackIp 클라이언트 플러그인
+    "~/plugins/pinia.ts",
   ],
   runtimeConfig: {
     public: {

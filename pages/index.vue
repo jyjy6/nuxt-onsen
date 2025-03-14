@@ -5,6 +5,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import axios from "axios";
+import { useModalStore } from "~/store/modal";
 
 const modules = [Navigation, Pagination, Autoplay];
 // First Swiper
@@ -136,6 +137,7 @@ interface Content {
   contentsTag: string[];
   mainImg: string;
   date: string;
+  info: string;
 }
 
 // buttons 배열의 아이템 타입 정의
@@ -278,21 +280,25 @@ interface Episode {
   date: string;
   uploadDate: string;
 }
-const randomEpisode = ref<Episode>();
+const playingEpisode = ref<Episode>();
+
 const fetchRandomEpisode = async () => {
   try {
     const response = await axios.get<{ data: Episode }>("/api/episodes");
-    randomEpisode.value = response.data.data;
+    playingEpisode.value = response.data.data;
   } catch (error) {
     console.error("랜덤 에피소드를 가져오는 데 실패했습니다:", error);
   }
 };
+const selectEpisode = (episode: Episode) => {
+  playingEpisode.value = episode;
+};
 
 onMounted(async () => {
   await fetchRandomEpisode(); // ✅ 데이터를 가져올 때까지 기다림
-  console.log("랜덤 에피소드:", randomEpisode.value);
-  console.log("ID:", randomEpisode.value?._id);
-  console.log("에피소드 이름:", randomEpisode.value?.episodeName);
+  console.log("랜덤 에피소드:", playingEpisode.value);
+  console.log("ID:", playingEpisode.value?._id);
+  console.log("에피소드 이름:", playingEpisode.value?.episodeName);
 });
 const isAudio = (src: string | undefined) => {
   if (src) {
@@ -310,6 +316,17 @@ const getEmbedUrl = (url: string): string | null => {
     return videoId || null;
   }
   return null; // 유효하지 않은 링크인 경우
+};
+
+//모달창
+const modalStore = useModalStore();
+const selectedContent = ref<Content | null>(null);
+const openModal = (item: Content) => {
+  console.log("모달창발동됨 부모에서:");
+  console.log(item);
+  selectedContent.value = item;
+  console.log(selectedContent.value);
+  modalStore.openModal();
 };
 </script>
 
@@ -339,15 +356,15 @@ const getEmbedUrl = (url: string): string | null => {
             >
               <v-col
                 v-if="
-                  randomEpisode?.contentsLink.includes('youtube') ||
-                  randomEpisode?.contentsLink.includes('youtu.be')
+                  playingEpisode?.contentsLink.includes('youtube') ||
+                  playingEpisode?.contentsLink.includes('youtu.be')
                 "
                 class="d-flex justify-center align-center"
                 style="display: flex; width: 100%; height: 100%"
               >
                 <iframe
                   :src="`https://www.youtube.com/embed/${getEmbedUrl(
-                    randomEpisode.contentsLink
+                    playingEpisode.contentsLink
                   )}`"
                   class="episode-video-container"
                   title="YouTube Video"
@@ -365,13 +382,13 @@ const getEmbedUrl = (url: string): string | null => {
                 style="display: flex; width: 100%; height: 100%"
               >
                 <video
-                  :src="randomEpisode?.contentsLink"
+                  :src="playingEpisode?.contentsLink"
                   class="episode-video-container"
                   controls
                   :style="
-                    isAudio(randomEpisode?.contentsLink)
+                    isAudio(playingEpisode?.contentsLink)
                       ? {
-                          background: `url(${randomEpisode?.mainImg}) center/cover no-repeat`,
+                          background: `url(${playingEpisode?.mainImg}) center/cover no-repeat`,
                         }
                       : {}
                   "
@@ -452,6 +469,10 @@ const getEmbedUrl = (url: string): string | null => {
         </div>
 
         <!-- contentsList 표시 -->
+        <HomeContentsClickModalComponent
+          :content="selectedContent"
+          @selectEpisode="selectEpisode"
+        />
         <v-row class="mt-4">
           <v-col
             v-for="(item, index) in contentsList"
@@ -461,7 +482,7 @@ const getEmbedUrl = (url: string): string | null => {
             <v-card
               class="mb-4 elevation-2"
               style="height: 450px"
-              :to="`/broadcast/${item._id}`"
+              @click="openModal(item)"
             >
               <!-- 이미지 -->
               <v-img :src="item.mainImg" class="mb-2" height="200px"></v-img>

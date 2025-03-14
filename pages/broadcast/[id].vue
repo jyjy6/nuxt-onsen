@@ -228,31 +228,11 @@
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import axios from "axios";
+import type { Content } from "@/types/contentTypes";
+import type { Episode } from "@/types/episodeTypes";
 
 const route = useRoute();
 const content = ref<Content | null>(null);
-
-interface Content {
-  _id: string;
-  contentsName: string;
-  mainImg: string;
-  personality: string[];
-  contentsTag: string[];
-  date: string;
-  info: string;
-}
-interface Episode {
-  _id: string;
-  contentsCode: string;
-  mainImg: string;
-  episode: string;
-  episodeName: string;
-  contentsLink: string;
-  omake: string;
-  guest?: string[];
-  date: string;
-  uploadDate: string;
-}
 const episodes = ref<Episode[]>([]);
 
 onMounted(async () => {
