@@ -296,9 +296,6 @@ const selectEpisode = (episode: Episode) => {
 
 onMounted(async () => {
   await fetchRandomEpisode(); // ✅ 데이터를 가져올 때까지 기다림
-  console.log("랜덤 에피소드:", playingEpisode.value);
-  console.log("ID:", playingEpisode.value?._id);
-  console.log("에피소드 이름:", playingEpisode.value?.episodeName);
 });
 const isAudio = (src: string | undefined) => {
   if (src) {
@@ -322,10 +319,7 @@ const getEmbedUrl = (url: string): string | null => {
 const modalStore = useModalStore();
 const selectedContent = ref<Content | null>(null);
 const openModal = (item: Content) => {
-  console.log("모달창발동됨 부모에서:");
-  console.log(item);
   selectedContent.value = item;
-  console.log(selectedContent.value);
   modalStore.openModal();
 };
 </script>
