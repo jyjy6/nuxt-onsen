@@ -58,6 +58,7 @@
                   @click="
                     emit('selectEpisode', ep);
                     modalStore.closeModal();
+                    scrollToTop();
                   "
                 >
                   <!-- PlayButton -->
@@ -142,6 +143,11 @@ onMounted(() => {
 const emit = defineEmits<{
   (event: "selectEpisode", episode: Episode): void;
 }>();
+const scrollToTop = () => {
+  nextTick(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+};
 </script>
 
 <style scoped>
