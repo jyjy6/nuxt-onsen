@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 interface LoginBody {
-  email: string;
+  username: string;
   password: string;
 }
 
@@ -15,11 +15,11 @@ export default defineEventHandler(async (event) => {
   try {
     const body = await readBody<LoginBody>(event);
 
-    if (!body.email || !body.password) {
+    if (!body.username || !body.password) {
       return { success: false, message: "이메일과 비밀번호가 필요합니다." };
     }
 
-    const user = await RegisterModel.findOne({ email: body.email });
+    const user = await RegisterModel.findOne({ username: body.username });
 
     if (!user) {
       event.node.res.statusCode = 401;
@@ -42,13 +42,13 @@ export default defineEventHandler(async (event) => {
     }
 
     const accessToken = jwt.sign(
-      { userId: user._id, email: user.email },
+      { userId: user._id, username: user.username },
       process.env.JWT_ACCESS_SECRET_KEY || "",
       { expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN }
     );
 
     const refreshToken = jwt.sign(
-      { userId: user._id, email: user.email },
+      { userId: user._id, username: user.username },
       process.env.JWT_REFRESH_SECRET_KEY || "",
       { expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN }
     );
@@ -67,8 +67,14 @@ export default defineEventHandler(async (event) => {
       accessToken,
       user: {
         userId: user._id,
-        email: user.email,
+        username: user.username,
         name: user.name,
+        email: user.email,
+        role: user.role,
+        profileImage: user.profileImage,
+        phone: user.phone,
+        address: user.address,
+        lastLogin: user.lastLogin,
       },
     };
   } catch (error: any) {

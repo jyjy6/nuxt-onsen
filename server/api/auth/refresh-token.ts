@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
 
     // 새 액세스 토큰 생성
     const accessToken = jwt.sign(
-      { userId: decoded.userId, email: decoded.email },
+      { userId: decoded.userId, username: decoded.username },
       process.env.JWT_ACCESS_SECRET_KEY as string,
       { expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN }
     );

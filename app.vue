@@ -51,8 +51,9 @@
         <div v-if="isLoggedIn" class="d-flex align-center" style="gap: 10px">
           <!-- 사용자 이름 및 이메일 -->
           <div>
-            <p style="margin: 0; font-weight: bold">{{ userName }}</p>
-            <p style="margin: 0; color: gray">{{ userEmail }}</p>
+            <p style="margin: 0; font-weight: bold">{{ user?.name }}</p>
+            <p style="margin: 0; color: gray">{{ user?.email }}</p>
+            <p style="margin: 0; color: gray">{{ user?.role }}</p>
           </div>
 
           <!-- 로그아웃 버튼 -->
@@ -117,14 +118,16 @@
             <p>&nbsp;アプリ</p>
           </v-btn>
         </v-list-item>
+
+        <!-- 사이드바 -->
         <v-list-item>
           <div v-if="isLoggedIn" class="d-flex align-center" style="gap: 10px">
             <!-- 사용자 이름 및 이메일 -->
             <div>
-              <p style="margin: 0; font-weight: bold">{{ userName }}</p>
-              <p style="margin: 0; color: gray">{{ userEmail }}</p>
+              <p style="margin: 0; font-weight: bold">{{ user?.name }}</p>
+              <p style="margin: 0; color: gray">{{ user?.email }}</p>
+              <p style="margin: 0; color: gray">{{ user?.role }}</p>
             </div>
-
             <!-- 로그아웃 버튼 -->
             <v-btn
               type="text"
@@ -220,24 +223,34 @@ const rightButtons = ref([
     to: "/test",
   },
 ]);
+interface UserInfo {
+  userId: string;
+  username: string;
+  name: string;
+  email: string;
+  role: string;
+  profileImage: string;
+  phone: string;
+  address: string;
+  lastLogin: string;
+}
 
 const router = useRouter();
 const isLoggedIn = ref(false);
-const userName = ref(""); // 사용자 이름
-const userEmail = ref(""); // 사용자 이메일
+const user = ref<UserInfo>();
 
 // 로컬스토리지에서 토큰과 사용자 정보 가져오기
 onMounted(() => {
   const token = localStorage.getItem("accessToken");
   if (token) {
     isLoggedIn.value = true;
-
     // 토큰에서 사용자 정보 가져오기 (예: 이름, 이메일)
-    const user = JSON.parse(localStorage.getItem("user") || "{}"); // JSON으로 저장된 사용자 정보 가져오기
-    userName.value = user.name || "Guest";
-    userEmail.value = user.email || "guest@example.com";
+    user.value = JSON.parse(localStorage.getItem("user") || "{}"); // JSON으로 저장된 사용자 정보 가져오기
   }
 });
+
+console.log("유저" + user);
+console.log(user.value);
 
 // 로그아웃 처리
 const handleLogout = async () => {
