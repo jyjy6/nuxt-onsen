@@ -5,9 +5,9 @@
       <v-card-subtitle>Sign in to your account</v-card-subtitle>
       <v-form @submit.prevent="handleLogin">
         <v-text-field
-          label="Email"
-          v-model="email"
-          type="email"
+          label="아이디"
+          v-model="username"
+          type="username"
           required
           outlined
         />
@@ -34,14 +34,14 @@ import { useRouter } from "vue-router";
 import axios, { AxiosError } from "axios";
 import { jwtDecode } from "jwt-decode";
 
-const email = ref("");
+const username = ref("");
 const password = ref("");
 const router = useRouter();
 
 const handleLogin = async () => {
   try {
     const response = await axios.post("/api/auth/login", {
-      email: email.value,
+      username: username.value,
       password: password.value,
     });
     if (!response.data.success) {
