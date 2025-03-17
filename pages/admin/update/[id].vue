@@ -16,12 +16,13 @@ import type { Form } from "@/types/formTypes";
 
 definePageMeta({
   layout: "admin",
+  middleware: ["admin"],
 });
 
 const route = useRoute();
 const personalities = ref<string[]>([]);
 const formData = ref<Form>();
-const apiUrl = `/api/contents/${route.params.id}`;
+const apiUrl = `/api/admin/contents/${route.params.id}`;
 
 const contentFields = ref([
   {

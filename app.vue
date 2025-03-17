@@ -1,88 +1,39 @@
 <template>
   <v-app>
-    <v-app-bar color="white" dark>
-      <!-- Nav Icon -->
+    <v-app-bar color="white" class="custom-app-bar">
+      <!-- 왼쪽 드로어 메뉴 버튼 -->
       <v-app-bar-nav-icon @click="toggleDrawer" />
-      <!-- Title -->
-      <v-toolbar-title style="width: 170px; min-width: 170px; max-width: 170px">
+      <!-- 로고 -->
+      <v-toolbar-title class="logo" style="min-width: 140px">
         <v-btn to="/" class="home-v-btn">
           <v-img
             src="https://www.onsen.ag/_nuxt/img/98a6440.png"
-            style="width: 150px; min-width: 150px; max-width: 150px"
+            class="logo-img"
+            style="min-width: 140px"
           />
         </v-btn>
       </v-toolbar-title>
-      <!-- Right button -->
+
       <v-spacer></v-spacer>
-      <div class="right-buttons">
-        <v-btn
-          v-for="btn in rightButtons"
-          :key="btn.id"
-          :type="btn.btnType"
-          :to="btn.to"
-        >
-          {{ btn.btnTitle }}
-        </v-btn>
-        <v-btn type="text" to="/test">
-          <v-img
-            src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAAUCAYAAACAl21KAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAEqADAAQAAAABAAAAFAAAAAAV6Uf1AAABrUlEQVQ4EZWUzytEURTHZ/wqVixGg1JSsmChKBursbab8WunlFgoG2WDlX+Alf+AERsLoYSSIskGW7HwM5Efk+Lzfc6r23heb0593veec8+dO+ee+148FouNQjW4toez7Qb+GbcR74FFzafhG45hC07hAZIQZnVM3sC8m7SMs2KBcvQc1swPkgqC2ngTStyEBM4dDFqwE/1yfAt7EuepjS+g0ovkPTL4j1Bj8Tk0qMRZy2uyvEDJEl23mTL0DFbNl/RCDlJywkzdU4lDlqSuaOEAdMAbqMuRTLs+Q71lT6P3oA4tWCyyqIO6CjpYdUUdurIxEt1Uov6FX0YL4w/oh4JNi16h0VZOovpxbVKQ6ax043ehCIrhAFR2ZGsnUx3yD3rCVuruKN5nfqjUMnsNfodU4js0g2wcdEVCS9R7dgTqmPsO6VIegspTJ3cgC4GmhCW4hKq8jCS+XpcpizegL6Bz/GMzRJ5A5xBkut2f0GqTI6hKTJjvSYZnDrrdYMBYn5YTKLW5DVRfAs/8Do35gRD1S9wnR9dAqiuS1rkMg8z7XP4OQ58pZrvyMm5/AIh6VCYDGXE0AAAAAElFTkSuQmCC"
-            alt="Sample Image"
-            aspect-ratio="1.7"
-            width="30"
-          />
-        </v-btn>
 
-        <!-- Application btn -->
-        <v-btn
-          type="text"
-          to="/test"
-          style="background-color: #43b149; color: white; font-weight: bold"
-          class="no-btncolor-change"
-        >
-          <v-img
-            src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAASCAYAAAC5DOVpAAAA20lEQVQ4je2TPQrCQBSEP9RSsPQCVv6EgKBgYyHYCzbewM6TiK2F4C0UBA/gBbxESi2VkeAKm7hxg6Z0IGR3582XB/uCJN8zlXSTNPPVlvCrDZSBvq8yDyy3/rBiYENgBdQyMvH5EhiljYqjeAFMgAEwdoAOQA9oAMeE6xi+lqRIT50krcx6a/YyfjudzZrmjgW8K6nI+G+5T7+HDZTVkRP0gtUl7SXVPMAsUJzbxZx4E5jiMOOLTUlr83b5ockHrttM6wzMc9QVO7R2Zxvg+gWjasNegO5PbcHlAQSyfYdj7F5wAAAAAElFTkSuQmCC"
-            alt="Application Image"
-            width="20"
-          />
-          <p>&nbsp;アプリ</p>
-        </v-btn>
-
-        <!-- Login btn -->
-        <div v-if="isLoggedIn" class="d-flex align-center" style="gap: 10px">
-          <!-- 사용자 이름 및 이메일 -->
-          <div>
-            <p style="margin: 0; font-weight: bold">{{ user?.name }}</p>
-            <p style="margin: 0; color: gray">{{ user?.email }}</p>
-            <p style="margin: 0; color: gray">{{ user?.role }}</p>
-          </div>
-
-          <!-- 로그아웃 버튼 -->
-          <v-btn
-            type="text"
-            style="background-color: #ff9900; color: white; font-weight: bold"
-            class="no-btncolor-change"
-            @click="handleLogout"
-          >
-            로그아웃
+      <!-- 버튼 그룹 (가로 스크롤 가능) -->
+      <v-slide-group show-arrows v-if="isDesktop">
+        <v-slide-group-item v-for="btn in filteredButtons" :key="btn.id">
+          <v-btn :type="btn.btnType" :to="btn.to" class="nav-btn">
+            {{ btn.btnTitle }}
           </v-btn>
+        </v-slide-group-item>
+      </v-slide-group>
+
+      <!-- 로그인/로그아웃 -->
+      <div v-if="isLoggedIn" class="user-info">
+        <div style="min-width: 50px">
+          <p class="user-name">{{ loginStore.user?.name }}</p>
+          <p class="user-role">{{ loginStore.user?.role }}</p>
         </div>
-        <div v-else>
-          <!-- 로그인 버튼 -->
-          <v-btn
-            type="text"
-            to="/login"
-            style="background-color: #ff9900; color: white; font-weight: bold"
-            class="no-btncolor-change"
-          >
-            <v-img
-              src="https://www.onsen.ag/assets/img/common/icon-header-02.png"
-              alt="Login Image"
-              width="20"
-            />
-            <p>&nbsp;ログイン</p>
-          </v-btn>
-        </div>
+        <v-btn @click="loginStore.logout()" class="logout-btn">로그아웃</v-btn>
       </div>
+      <v-btn v-else to="/login" class="login-btn">ログイン</v-btn>
     </v-app-bar>
 
     <!-- Navigation Desk -->
@@ -94,13 +45,13 @@
         <v-list-item to="/about">
           <v-list-item-title>音泉通販</v-list-item-title>
         </v-list-item>
-        <v-list-item to="/test">
+        <v-list-item v-if="loginStore.user?.role === 'admin'" to="/test">
           <v-list-item-title>TEST</v-list-item-title>
         </v-list-item>
         <v-list-item to="/broadcast/list">
           <v-list-item-title>BroadCast List</v-list-item-title>
         </v-list-item>
-        <v-list-item to="/admin">
+        <v-list-item v-if="loginStore.user?.role === 'admin'" to="/admin">
           <v-list-item-title>admin</v-list-item-title>
         </v-list-item>
         <v-list-item>
@@ -124,16 +75,30 @@
           <div v-if="isLoggedIn" class="d-flex align-center" style="gap: 10px">
             <!-- 사용자 이름 및 이메일 -->
             <div>
-              <p style="margin: 0; font-weight: bold">{{ user?.name }}</p>
-              <p style="margin: 0; color: gray">{{ user?.email }}</p>
-              <p style="margin: 0; color: gray">{{ user?.role }}</p>
+              <p
+                style="
+                  margin: 0;
+                  font-weight: bold;
+                  overflow-x: auto;
+                  white-space: nowrap;
+                "
+              >
+                {{ loginStore.user?.name }}
+              </p>
+
+              <p style="margin: 0; white-space: nowrap; color: gray">
+                {{ loginStore.user?.email }}
+              </p>
+              <p style="margin: 0; white-space: nowrap; color: gray">
+                {{ loginStore.user?.role }}
+              </p>
             </div>
             <!-- 로그아웃 버튼 -->
             <v-btn
               type="text"
               style="background-color: #ff9900; color: white; font-weight: bold"
               class="no-btncolor-change"
-              @click="handleLogout"
+              @click="loginStore.logout()"
             >
               로그아웃
             </v-btn>
@@ -168,10 +133,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
-import axios from "axios";
-import type { AxiosInstance } from "axios";
+import { useLoginStore } from "./store/login";
 
 const rightButtons = ref([
   {
@@ -215,67 +179,53 @@ const rightButtons = ref([
     btnTitle: "admin",
     btnType: "text",
     to: "/admin",
+    adminOnly: true,
   },
   {
     id: 7,
     btnTitle: "テスト",
     btnType: "text",
     to: "/test",
+    adminOnly: true,
   },
 ]);
-interface UserInfo {
-  userId: string;
-  username: string;
-  name: string;
-  email: string;
-  role: string;
-  profileImage: string;
-  phone: string;
-  address: string;
-  lastLogin: string;
-}
+const filteredButtons = computed(() =>
+  rightButtons.value.filter(
+    (btn) => !btn.adminOnly || loginStore.user?.role === "admin"
+  )
+);
 
 const router = useRouter();
-const isLoggedIn = ref(false);
-const user = ref<UserInfo>();
+const isLoggedIn = computed(() => loginStore.isLogin);
+const loginStore = useLoginStore();
 
 // 로컬스토리지에서 토큰과 사용자 정보 가져오기
 onMounted(() => {
-  const token = localStorage.getItem("accessToken");
-  if (token) {
-    isLoggedIn.value = true;
-    // 토큰에서 사용자 정보 가져오기 (예: 이름, 이메일)
-    user.value = JSON.parse(localStorage.getItem("user") || "{}"); // JSON으로 저장된 사용자 정보 가져오기
-  }
+  loginStore.loadUserFromLocalStorage();
 });
 
-console.log("유저" + user);
-console.log(user.value);
+const drawer = ref(false);
+const windowWidth = ref(0);
+// 반응형 디바이스 감지
+const isDesktop = computed(() => windowWidth.value > 960);
 
-// 로그아웃 처리
-const handleLogout = async () => {
-  try {
-    const axiosInstance: AxiosInstance = axios.create({
-      // 필요한 설정 추가
-    });
-    await axiosInstance.post("/api/auth/logout"); // 서버에 로그아웃 요청
-  } catch (error) {
-    console.error("Logout failed:", error);
-  } finally {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("user");
-    isLoggedIn.value = false;
-    router.push("/login");
-  }
+const updateWindowWidth = () => {
+  windowWidth.value = window.innerWidth;
 };
 
-// provide로 MyPageComponent.vue에 상태값 전송
-provide("isLoggedIn", isLoggedIn);
-provide("handleLogout", handleLogout);
+onMounted(() => {
+  windowWidth.value = window.innerWidth;
+  window.addEventListener("resize", () => {
+    windowWidth.value = window.innerWidth;
+  });
+});
 
-const drawer = ref(false);
+onUnmounted(() => {
+  window.removeEventListener("resize", updateWindowWidth);
+});
 
 const toggleDrawer = () => {
+  console.log("Toggle Drawer Clicked"); // 디버깅용
   drawer.value = !drawer.value;
 };
 </script>
@@ -292,11 +242,70 @@ const toggleDrawer = () => {
 
 .right-buttons {
   display: flex;
-  align-items: center;
+  overflow-x: auto; /* 가로 스크롤 가능하게 설정 */
+  white-space: nowrap; /* 버튼이 줄바꿈되지 않도록 설정 */
 }
 
-@media (max-width: 1450px) {
-  .right-buttons {
+/* 모바일에서 스크롤 시 부드럽게 이동
+.right-buttons::-webkit-scrollbar {
+  height: 5px;
+}
+
+.right-buttons::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+} */
+
+.custom-app-bar {
+  padding: 0 16px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 로고 */
+.logo-img {
+  width: 140px;
+  height: auto;
+}
+
+/* 버튼 스타일 */
+.nav-btn {
+  font-weight: bold;
+  text-transform: uppercase;
+  margin: 0 8px;
+}
+
+/* 로그인 버튼 */
+.login-btn {
+  background-color: #ff9900;
+  color: white;
+  font-weight: bold;
+}
+
+/* 로그아웃 버튼 */
+.logout-btn {
+  background-color: #ff9900;
+  color: white;
+  font-weight: bold;
+}
+
+/* 유저 정보 */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-name {
+  font-weight: bold;
+}
+
+.user-role {
+  color: gray;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 760px) {
+  .nav-btn {
     display: none;
   }
 }
