@@ -1,6 +1,6 @@
 <template>
   <v-container v-if="!isLoading">
-    <FormComponent :fields="contentFields" apiUrl="/api/contents" />
+    <FormComponent :fields="contentFields" apiUrl="/api/admin/contents" />
   </v-container>
 </template>
 
@@ -10,6 +10,7 @@ import axios from "axios";
 
 definePageMeta({
   layout: "admin",
+  middleware: ["admin"],
 });
 
 const personalities = ref<string[]>([]);

@@ -22,35 +22,4 @@ export default defineEventHandler(async (event) => {
       };
     }
   }
-
-  let body;
-  if (method === "POST" || method === "PUT") {
-    body = await readBody(event);
-  }
-
-  if (method === "POST") {
-    try {
-      const newEpisode = await EpisodeModel.create(body);
-      return { success: true, data: newEpisode };
-    } catch (error) {
-      return { success: false, error: (error as AxiosError).message };
-    }
-  }
-
-  if (method === "PUT") {
-    try {
-      let { _id, ...updateData } = body;
-      if (!_id) {
-        _id = new mongoose.Types.ObjectId();
-      }
-      const updatedEpisode = await EpisodeModel.findOneAndUpdate(
-        { _id },
-        { $set: updateData },
-        { upsert: true, new: true } // upsert 적용 + 업데이트된 데이터 반환
-      );
-      return { success: true, data: updatedEpisode };
-    } catch (error) {
-      return { success: false, error: (error as AxiosError).message };
-    }
-  }
 });

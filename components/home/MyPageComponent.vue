@@ -3,17 +3,17 @@
     <v-row>
       <v-col>
         <v-card class="pa-4 bg-transparent" elevation="0">
-          <v-card-title v-if="isLoggedIn">마이페이지</v-card-title>
+          <v-card-title v-if="loginStore.isLogin">마이페이지</v-card-title>
           <v-card-title v-else class="bg-transparent"
             >로그인이 필요합니다</v-card-title
           >
-          <v-card-text v-if="isLoggedIn">
+          <v-card-text v-if="loginStore.isLogin">
             <p>환영합니다!!!! 회원 정보를 확인하세요.</p>
-            <v-btn color="primary" @click="logout">로그아웃</v-btn>
+            <v-btn color="primary" @click="loginStore.logout()">로그아웃</v-btn>
           </v-card-text>
         </v-card>
         <v-card>
-          <v-card-text v-if="!isLoggedIn">
+          <v-card-text v-if="!loginStore.isLogin">
             <p>로그인 후 마이페이지를 이용하실 수 있습니다.</p>
             <v-btn color="success" to="/login" style="margin-top: 10px"
               >로그인</v-btn
@@ -41,10 +41,9 @@
 </template>
 
 <script setup lang="ts">
-import { inject } from "vue";
+import { useLoginStore } from "~/store/login";
 
-const isLoggedIn = inject("isLoggedIn", false); // 기본값 false
-const logout = inject("handleLogout", () => {}); // app.vue에서 정의한 logout 함수
+const loginStore = useLoginStore();
 </script>
 
 <style scoped>

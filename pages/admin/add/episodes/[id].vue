@@ -2,13 +2,14 @@
   <FormComponent
     :formData="formData"
     :fields="episodeFields"
-    api-url="/api/episodes"
+    api-url="/api/admin/episodes"
   />
 </template>
 
 <script setup lang="ts">
 definePageMeta({
   layout: "admin",
+  middleware: ["admin"],
 });
 
 const route = useRoute();

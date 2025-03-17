@@ -7,12 +7,12 @@
         <v-text-field
           label="아이디"
           v-model="username"
-          type="username"
+          type="text"
           required
           outlined
         />
         <v-text-field
-          label="Password"
+          label="비밀번호"
           v-model="password"
           type="password"
           required
@@ -22,7 +22,7 @@
       </v-form>
       <v-divider class="my-4" />
       <v-btn block color="secondary" variant="text" @click="navigateToRegister">
-        Don't have an account? Register
+        계정이 없으신가요? 회원가입
       </v-btn>
     </v-card>
   </v-container>
@@ -31,40 +31,18 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import axios, { AxiosError } from "axios";
-import { jwtDecode } from "jwt-decode";
+import { useLoginStore } from "~/store/login";
 
 const username = ref("");
 const password = ref("");
 const router = useRouter();
+const loginStore = useLoginStore();
 
 const handleLogin = async () => {
-  try {
-    const response = await axios.post("/api/auth/login", {
-      username: username.value,
-      password: password.value,
-    });
-    if (!response.data.success) {
-      console.error("Login failed:", response.data.message);
-      alert(response.data.message || "로그인에 실패했습니다.");
-      return;
-    }
-
-    if (response.data.success && response.data.accessToken) {
-      // 액세스 토큰 저장 (예: localStorage)
-      localStorage.setItem("accessToken", response.data.accessToken);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
-      const decodedToken = jwtDecode(response.data.accessToken);
-      const expirationTime = decodedToken.exp; // 만료 시간 (Unix timestamp)
-
-      alert("로그인 성공!");
-      router.push("/").then(() => {
-        window.location.reload();
-      });
-    }
-  } catch (error: any) {
-    console.error("Login failed:", error.message);
-    alert("Login failed. Please check your credentials.");
+  const success = await loginStore.login(username.value, password.value);
+  if (success) {
+    username.value = "";
+    password.value = "";
   }
 };
 

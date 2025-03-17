@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
+import { useLoginStore } from "~/store/login";
 
 export default defineEventHandler(async (event: any) => {
   // console.log("전체 헤더:", event.req.headers); // 헤더 전체 출력
-
   if (!event.req.url?.startsWith("/api/test")) {
     return; // API 경로가 아닐 경우 미들웨어 실행하지 않음
   }
@@ -11,7 +11,7 @@ export default defineEventHandler(async (event: any) => {
 
   if (!token) {
     console.error("토큰이 없습니다.");
-    return { success: false, message: "Token is missing." };
+    return { success: false, message: "Token is missing. 인증이 필요합니다." };
   }
 
   try {
@@ -21,6 +21,7 @@ export default defineEventHandler(async (event: any) => {
     );
     console.log("디코딩된 토큰:", decoded);
     event.req.user = decoded;
+
     return { success: true, user: decoded, message: "정상토큰" };
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {

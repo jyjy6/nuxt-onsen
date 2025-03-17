@@ -42,13 +42,13 @@ export default defineEventHandler(async (event) => {
     }
 
     const accessToken = jwt.sign(
-      { userId: user._id, username: user.username },
+      { userId: user._id, username: user.username, role: user.role },
       process.env.JWT_ACCESS_SECRET_KEY || "",
       { expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN }
     );
 
     const refreshToken = jwt.sign(
-      { userId: user._id, username: user.username },
+      { userId: user._id, username: user.username, role: user.role },
       process.env.JWT_REFRESH_SECRET_KEY || "",
       { expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN }
     );

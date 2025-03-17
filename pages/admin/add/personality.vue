@@ -1,14 +1,12 @@
 <!-- pages/PersonalityForm.vue -->
 <template>
-  <FormComponent
-    :fields="personalityFields"
-    apiUrl="/api/personality"
-  />
+  <FormComponent :fields="personalityFields" apiUrl="/api/personality" />
 </template>
 
 <script setup lang="ts">
 definePageMeta({
   layout: "admin",
+  middleware: ["admin"],
 });
 const router = useRouter();
 const personalityFields = [
@@ -20,6 +18,4 @@ const personalityFields = [
   },
   { name: "mainImg", label: "진행자 이미지", type: "text" },
 ];
-
-
 </script>

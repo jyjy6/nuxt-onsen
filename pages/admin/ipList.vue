@@ -1,6 +1,10 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import axios from "axios";
+definePageMeta({
+  layout: "admin",
+  middleware: ["admin"],
+});
 
 const logs = ref([]);
 
