@@ -28,8 +28,8 @@
       <!-- 로그인/로그아웃 -->
       <div v-if="isLoggedIn" class="user-info">
         <div style="min-width: 50px">
-          <p class="user-name">{{ loginStore.user?.name }}</p>
-          <p class="user-role">{{ loginStore.user?.role }}</p>
+          <p class="user-name">{{ user?.name }}</p>
+          <p class="user-role">{{ user?.role }}</p>
         </div>
         <v-btn @click="loginStore.logout()" class="logout-btn">로그아웃</v-btn>
       </div>
@@ -45,13 +45,13 @@
         <v-list-item to="/about">
           <v-list-item-title>音泉通販</v-list-item-title>
         </v-list-item>
-        <v-list-item v-if="loginStore.user?.role === 'admin'" to="/test">
+        <v-list-item v-if="user?.role === 'admin'" to="/test">
           <v-list-item-title>TEST</v-list-item-title>
         </v-list-item>
         <v-list-item to="/broadcast/list">
           <v-list-item-title>BroadCast List</v-list-item-title>
         </v-list-item>
-        <v-list-item v-if="loginStore.user?.role === 'admin'" to="/admin">
+        <v-list-item v-if="user?.role === 'admin'" to="/admin">
           <v-list-item-title>admin</v-list-item-title>
         </v-list-item>
         <v-list-item>
@@ -83,14 +83,14 @@
                   white-space: nowrap;
                 "
               >
-                {{ loginStore.user?.name }}
+                {{ user?.name }}
               </p>
 
               <p style="margin: 0; white-space: nowrap; color: gray">
-                {{ loginStore.user?.email }}
+                {{ user?.email }}
               </p>
               <p style="margin: 0; white-space: nowrap; color: gray">
-                {{ loginStore.user?.role }}
+                {{ user?.role }}
               </p>
             </div>
             <!-- 로그아웃 버튼 -->
@@ -191,12 +191,13 @@ const rightButtons = ref([
 ]);
 const filteredButtons = computed(() =>
   rightButtons.value.filter(
-    (btn) => !btn.adminOnly || loginStore.user?.role === "admin"
+    (btn) => !btn.adminOnly || user.value?.role === "admin"
   )
 );
 
 const router = useRouter();
 const isLoggedIn = computed(() => loginStore.isLogin);
+const user = computed(() => loginStore.user);
 const loginStore = useLoginStore();
 
 // 로컬스토리지에서 토큰과 사용자 정보 가져오기

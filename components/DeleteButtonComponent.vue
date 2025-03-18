@@ -3,11 +3,13 @@
 </template>
 
 <script setup lang="ts">
-import axios from "axios";
+import { useSecureApi } from "~/composables/useSecureApi";
 
 const props = defineProps<{
   URL: string;
 }>();
+
+const api = useSecureApi();
 
 const confirmDelete = async () => {
   // 확인 대화상자 또는 모달을 띄울 수 있습니다.
@@ -15,10 +17,9 @@ const confirmDelete = async () => {
   if (isConfirmed) {
     try {
       // 삭제 요청
-      const response = await axios.delete(props.URL);
+      const response = await api.secureDelete(props.URL);
       if (response.data.success) {
         alert("삭제 성공");
-        // 삭제 후 추가적인 동작 (예: 페이지 리프레시, 리스트 업데이트 등)
         window.location.reload();
       } else {
         alert("삭제 실패");

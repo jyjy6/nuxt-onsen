@@ -1,4 +1,5 @@
 export interface UserInfo {
+  _id?: string;
   userId: string;
   username: string;
   name: string;
@@ -6,6 +7,10 @@ export interface UserInfo {
   role: string;
   profileImage: string;
   phone: string;
-  address: string;
+  address: {
+    country: string;
+    mainAddress: string;
+    subAddress: string;
+  };
   lastLogin: string;
 }

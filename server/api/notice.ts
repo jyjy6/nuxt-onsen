@@ -3,9 +3,7 @@ import NoticeModel from "../models/notice";
 
 // GET 요청: 모든 공지사항 가져오기
 export default defineEventHandler(async (event) => {
-  const method = getMethod(event);
-
-  if (method === "GET") {
+  if (event.method === "GET") {
     try {
       const notices = await NoticeModel.find()
         .sort({ createdAt: -1 })
@@ -22,43 +20,6 @@ export default defineEventHandler(async (event) => {
       };
     }
   }
-
-  // POST 요청: 새 공지사항 생성
-  if (method === "POST") {
-    try {
-      const body = await readBody(event);
-
-      // 데이터 검증
-      if (!body.title || !body.content || !body.mainImg || !body.link) {
-        return {
-          status: 400,
-          message: "All fields are required.",
-        };
-      }
-
-      const newNotice = new NoticeModel({
-        title: body.title,
-        content: body.content,
-        mainImg: body.mainImg,
-        link: body.link,
-      });
-
-      await newNotice.save();
-
-      return {
-        status: 201,
-        message: "Notice created successfully",
-        data: newNotice,
-      };
-    } catch (error) {
-      return {
-        status: 500,
-        message: "Error creating notice",
-        error,
-      };
-    }
-  }
-
   // 허용되지 않은 HTTP 메서드 처리
   return {
     status: 405,

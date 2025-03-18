@@ -37,33 +37,31 @@
               class="mr-2 mb-2"
               color="primary"
               variant="outlined"
-              @click="(event) => personInfo(personality, event)"
+              @click="openDialog(personality)"
             >
               <v-icon start icon="mdi-account"></v-icon>
               {{ personality }}
             </v-chip>
             <!-- 모달 -->
-            <div class="modal-wrapper">
-              <div
-                v-if="modalVisible"
-                class="modal-container"
-                :style="{ ...modalStyle }"
-              >
-                <v-card class="pa-4" style="width: 100%">
-                  <v-img
-                    v-if="person?.mainImg"
-                    :src="person.mainImg"
-                    height="120"
-                    class="mb-2"
-                  ></v-img>
-                  <h3 class="mb-2">{{ person?.personalityName }}</h3>
-                  <p>ID: {{ person?._id }}</p>
-                  <v-btn @click="closeModal" color="error" variant="outlined"
-                    >닫기</v-btn
-                  >
-                </v-card>
-              </div>
-            </div>
+            <v-dialog
+              v-model="dialog"
+              max-width="400"
+              :style="{ '--v-overlay-opacity': '0.1' }"
+            >
+              <v-card v-if="person" class="pa-4">
+                <v-img
+                  v-if="person.mainImg"
+                  :src="person.mainImg"
+                  height="120"
+                  class="mb-2"
+                ></v-img>
+                <h3 class="mb-2">{{ person.personalityName }}</h3>
+                <p>ID: {{ person._id }}</p>
+                <v-btn @click="closeDialog" color="error" variant="outlined">
+                  닫기
+                </v-btn>
+              </v-card>
+            </v-dialog>
           </div>
 
           <!-- 날짜 칩 -->
@@ -273,33 +271,17 @@ interface PersonInfo {
   personalityName: string;
   mainImg: string;
 }
-
 const person = ref<PersonInfo | null>(null);
-const modalVisible = ref(false);
+const dialog = ref(false); // Dialog 표시 여부
 
-const modalStyle = ref({
-  top: "0px",
-  left: "0px",
-});
-
-const personInfo = async (personality: string, event: any) => {
+const openDialog = async (personality: string) => {
   try {
     const response = await axios.get<{ success: boolean; data: PersonInfo }>(
       `/api/personality?personalityName=${encodeURIComponent(personality)}`
     );
     if (response.data.success) {
       person.value = response.data.data;
-
-      // 칩의 위치 계산
-      const chipElement = (event.target as HTMLElement).closest(".v-chip");
-      if (chipElement) {
-        const rect = chipElement.getBoundingClientRect();
-        modalStyle.value = {
-          top: `${rect.top + window.scrollY - 150}px`, // 칩의 Y축 위치
-          left: `${rect.right + 10}px`, // 칩의 오른쪽 끝 + 약간의 간격
-        };
-      }
-      modalVisible.value = true; // 모달 보이기
+      dialog.value = true; // 다이얼로그 열기
     } else {
       console.error("데이터를 가져오지 못했습니다.");
     }
@@ -308,8 +290,9 @@ const personInfo = async (personality: string, event: any) => {
   }
 };
 
-const closeModal = () => {
-  modalVisible.value = false;
+const closeDialog = () => {
+  dialog.value = false; // 다이얼로그 닫기
+  person.value = null; // person 데이터 초기화 (선택적)
 };
 
 const isPlay = ref(false);
@@ -320,7 +303,6 @@ const isAudio = (src: string): boolean => {
 
 <style scoped>
 .modal-wrapper {
-  position: relative; /* 추가 */
   width: 100%;
   height: 0;
 }
@@ -331,7 +313,7 @@ const isAudio = (src: string): boolean => {
   border: 1px solid #ccc;
   border-radius: 8px;
   padding: 16px;
-  z-index: 9999; /* z-index 값 증가 */
+  z-index: 10000; /* z-index 값 증가 */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   width: 300px;
 }

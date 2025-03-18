@@ -52,7 +52,7 @@
 
 <script setup lang="ts">
 import { ref, defineProps } from "vue";
-import axios from "axios";
+import { useSecureApi } from "~/composables/useSecureApi";
 
 const search = ref<string>(""); // 검색어 상태 추가
 
@@ -91,6 +91,7 @@ const form = ref<Record<string, any>>({});
 const valid = ref(false);
 const isPut = ref(false);
 const router = useRouter();
+const api = useSecureApi();
 
 const fileUploadRefs = ref<Record<string, any>>({});
 // formData가 바뀔 때마다 form을 업데이트
@@ -127,13 +128,13 @@ const submitForm = async () => {
     if (!isPut.value) {
       console.log("작성코드발동");
       console.log(form.value);
-      const response = await axios.post(props.apiUrl, form.value);
+      const response = await api.securePost(props.apiUrl, form.value);
       alert("저장성공!");
       router.push("/broadcast/list");
     } else {
       console.log("수정코드발동");
       console.log(form.value);
-      const response = await axios.put(props.apiUrl, form.value);
+      const response = await api.securePut(props.apiUrl, form.value);
       alert("저장성공!");
       router.push("/broadcast/list");
       isPut.value = false;

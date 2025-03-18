@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineEmits, defineExpose } from "vue";
+import { ref, computed, defineEmits } from "vue";
 import { useS3Upload } from "~/composables/useS3Upload";
 
 const props = defineProps<{

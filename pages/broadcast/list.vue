@@ -36,10 +36,18 @@
             </div>
           </v-card-text>
         </v-card>
-        <v-btn :to="`/admin/update/${content._id}`" color="primary">
+        <v-btn
+          v-if="loginStore.user?.role === 'admin'"
+          :to="`/admin/update/${content._id}`"
+          color="primary"
+        >
           수정
         </v-btn>
-        <v-btn :to="`/admin/add/episodes/${content._id}`" color="warning">
+        <v-btn
+          v-if="loginStore.user?.role === 'admin'"
+          :to="`/admin/add/episodes/${content._id}`"
+          color="warning"
+        >
           에피소드 추가
         </v-btn>
         <DeleteButtonComponent :URL="`/api/contents/${content._id}`" />
@@ -52,8 +60,10 @@
 import axios from "axios";
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import { useLoginStore } from "~/store/login";
 
 const router = useRouter();
+const loginStore = useLoginStore();
 
 // 방송 상세 페이지로 이동하는 함수
 const navigateToBroadcast = (id: string) => {

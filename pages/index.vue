@@ -61,22 +61,22 @@ const swiperOptions2 = {
     disableOnInteraction: false,
   },
 };
-const items2 = ref([
+const noticeSlide = ref([
   {
     id: 4,
-    title: "internet something~~~~",
+    title: "공지 슬라이드1",
     image:
       "https://d3bzklg4lms4gh.cloudfront.net/banner_ad/banner_image/default/production/30/1c/931f6181f616abcb0a8177b0d7d9db1f5675/image?v=1731578493",
   },
   {
     id: 5,
-    title: "radio is 2",
+    title: "공지 슬라이드2",
     image:
       "https://d3bzklg4lms4gh.cloudfront.net/banner_ad/banner_image/default/production/ed/2c/a5c823dcc6de5df90572f07f1d36cb9d8929/image?v=1711941354",
   },
   {
     id: 6,
-    title: "go go go 456",
+    title: "공지 슬라이드3",
     image:
       "https://d3bzklg4lms4gh.cloudfront.net/banner_ad/banner_image/default/production/04/bc/125814aad5c9a83c60b462f5a5d78373c3e7/image?v=1690427379",
   },
@@ -95,34 +95,34 @@ const swiperOptions3 = {
   pagination: { clickable: true },
   dots: true,
 };
-const items3 = ref([
+const recommendedContents = ref([
   {
     id: 7,
-    title: "internet something~~~~",
+    title: "추천방송1",
     image:
       "https://d3bzklg4lms4gh.cloudfront.net/program_info/image/default/production/0d/06/ae390a11f2cee482e656b2161b6ee175d5a8/image?v=1733562920",
   },
   {
     id: 8,
-    title: "radio is 678",
+    title: "추천방송2",
     image:
       "https://d3bzklg4lms4gh.cloudfront.net/program_info/image/default/production/fe/1e/9335929e1bdf8e6893c84563dbdbace741aa/image?v=1733904363",
   },
   {
     id: 9,
-    title: "go go go 910",
+    title: "추천방송3",
     image:
       "https://d3bzklg4lms4gh.cloudfront.net/program_info/image/default/production/d9/02/fd691478d67977a8aa183808aebab41a6317/image?v=1733298264",
   },
   {
     id: 10,
-    title: "go go go 1112",
+    title: "추천방송4",
     image:
       "https://d3bzklg4lms4gh.cloudfront.net/program_info/image/default/production/d9/02/fd691478d67977a8aa183808aebab41a6317/image?v=1733298264",
   },
   {
     id: 11,
-    title: "go go go 1314",
+    title: "추천방송5",
     image:
       "https://d3bzklg4lms4gh.cloudfront.net/program_info/image/default/production/3a/6b/3de4026429fa7a4cbae8cc472eae3e9d4b39/image?v=1733994177",
   },
@@ -399,7 +399,7 @@ const openModal = (item: Content) => {
               <v-container style="height: 50%">
                 <SwiperComponent
                   :swiperOptions="swiperOptions2"
-                  :items="items2"
+                  :items="noticeSlide"
                 />
               </v-container>
               <v-container style="height: 50%">
@@ -431,7 +431,10 @@ const openModal = (item: Content) => {
         <p style="color: #43b149; font-size: 1.2rem; margin-bottom: 15px">
           おすすめ番組
         </p>
-        <SwiperComponent :swiperOptions="swiperOptions3" :items="items3" />
+        <SwiperComponent
+          :swiperOptions="swiperOptions3"
+          :items="recommendedContents"
+        />
 
         <div
           class="d-flex align-center justify-center"

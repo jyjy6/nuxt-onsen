@@ -12,6 +12,7 @@ interface LoginBody {
 }
 
 export default defineEventHandler(async (event) => {
+  console.log("로그인시도됨");
   try {
     const body = await readBody<LoginBody>(event);
 

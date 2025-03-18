@@ -54,7 +54,7 @@ export default defineEventHandler(async (event) => {
     // 성공 응답 (보안 상 password는 반환하지 않음)
     return {
       success: true,
-      message: "User registered successfully.",
+      message: "User save successfully.",
       data: {
         username: newUser.username,
         name: newUser.name,
@@ -67,7 +67,7 @@ export default defineEventHandler(async (event) => {
       },
     };
   } catch (error) {
-    console.error("User registration error:", error);
+    console.error("User save error:", error);
     return {
       success: false,
       message: "Internal server error.",
