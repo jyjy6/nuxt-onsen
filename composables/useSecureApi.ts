@@ -3,13 +3,24 @@ import axios, { AxiosError } from "axios";
 import { ref } from "vue";
 
 export const useSecureApi = () => {
-  const csrfToken = ref(null);
+  const csrfToken = ref<string | null>(null);
   const isLoading = ref(false);
   const error = ref<AxiosError | null>(null);
+
+  const getCsrfTokenFromCookie = () => {
+    const match = document.cookie.match(/(^| )csrf-token=([^;]+)/);
+    return match ? match[2] : null; // 쿠키에서 'csrf-token' 값 추출
+  };
 
   // CSRF 토큰 가져오기
   const fetchCsrfToken = async () => {
     if (csrfToken.value) return csrfToken.value;
+
+    const tokenFromCookie = getCsrfTokenFromCookie(); // 쿠키에서 가져오기
+    if (tokenFromCookie) {
+      csrfToken.value = tokenFromCookie;
+      return csrfToken.value;
+    }
 
     isLoading.value = true;
     error.value = null;

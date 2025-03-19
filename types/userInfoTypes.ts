@@ -13,4 +13,5 @@ export interface UserInfo {
     subAddress: string;
   };
   lastLogin: string;
+  premiumUntil?: string;
 }

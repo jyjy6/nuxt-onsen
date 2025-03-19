@@ -47,7 +47,6 @@ const modalStore = useModalStore;
           </v-btn>
         </v-col>
       </v-row>
-
       <v-row v-if="apiMessage">
         <v-col cols="12">
           <!-- API 응답 메시지 출력 -->

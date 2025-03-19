@@ -27,6 +27,7 @@ const registerSchema = new mongoose.Schema(
     loginAttempts: { type: Number, default: 0 },
     resetPasswordToken: { String },
     resetPasswordExpire: { Date },
+    premiumUntil: { Date },
   },
   { timestamps: true }
 );

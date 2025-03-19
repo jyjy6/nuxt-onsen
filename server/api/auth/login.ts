@@ -76,6 +76,7 @@ export default defineEventHandler(async (event) => {
         phone: user.phone,
         address: user.address,
         lastLogin: user.lastLogin,
+        premiumUntil: user.premiumUntil
       },
     };
   } catch (error: any) {
