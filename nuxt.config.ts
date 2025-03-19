@@ -2,17 +2,24 @@
 
 export default defineNuxtConfig({
   compatibilityDate: "2024-04-03",
-  modules: ["@pinia/nuxt"],
+  modules: ["@sidebase/nuxt-auth", "@pinia/nuxt"],
   devtools: { enabled: true },
   css: ["vuetify/lib/styles/main.css", "@mdi/font/css/materialdesignicons.css"], // Vuetify 기본 CSS 추가
   build: {
     transpile: ["vuetify"], // Vuetify 트랜스파일 설정
+  },
+  auth: {
+    baseURL: process.env.AUTH_ORIGIN || "http://localhost:3000",
+    provider: {
+      type: "authjs",
+    },
   },
   plugins: [
     "~/plugins/axios.ts", // axios 플러그인
     "~/plugins/trackIp.client.ts", // trackIp 클라이언트 플러그인
     "~/plugins/pinia.ts",
   ],
+
   runtimeConfig: {
     public: {
       apiBase: "http://localhost:3000/api",

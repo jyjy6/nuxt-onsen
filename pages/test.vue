@@ -15,7 +15,7 @@ const apiMessage = ref<string>("");
 const fetchTestMessage = async () => {
   try {
     // '/api/test' API 호출, 응답 타입을 ApiResponse로 지정
-    const response = await axios.get<ApiResponse>("/api/test"); // axios 사용
+    const response = await axios.get<ApiResponse>("/api/auth/refresh-token"); // axios 사용
     apiMessage.value = response.data.message || "No message returned"; // 응답 메시지 처리
   } catch (error: any) {
     // error 타입을 any로 지정
