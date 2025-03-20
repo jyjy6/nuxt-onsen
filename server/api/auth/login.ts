@@ -13,6 +13,7 @@ interface LoginBody {
 
 export default defineEventHandler(async (event) => {
   console.log("로그인시도됨");
+
   try {
     const body = await readBody<LoginBody>(event);
 
@@ -27,20 +28,54 @@ export default defineEventHandler(async (event) => {
       return { success: false, message: "인증 실패" };
     }
 
-    try {
-      const isValid = await bcrypt.compare(
-        String(body.password),
-        String(user.password)
-      );
-
-      if (!isValid) {
-        event.node.res.statusCode = 401;
-        return { success: false, message: "인증 실패" };
-      }
-    } catch (bcryptError) {
-      console.error("비밀번호 검증 에러:", bcryptError);
-      return { success: false, message: "비밀번호 검증 실패" };
+    // 3.6초 지나면 로그인 시도 횟수 초기화
+    if (
+      user.loginSuspendedTime &&
+      new Date().getTime() - user.loginSuspendedTime.getTime() >= 60 * 60
+    ) {
+      user.loginSuspendedTime = null;
+      user.loginAttempts = 0;
+      console.log("로그인 시도 0회로 리셋됨 (3.6초 경과)");
+      await user.save(); // 초기화된 값 저장
     }
+
+    // 로그인 시도 5회 초과시 로그인 차단
+    if (user.loginAttempts >= 5) {
+      console.log("로그인 시도 5회 초과됨");
+      return {
+        success: false,
+        message: "로그인 횟수 5회를 초과했습니다. 잠시 후 다시 시도해주세요.",
+      };
+    }
+
+    // 비밀번호 비교
+    const isValid = await bcrypt.compare(
+      String(body.password),
+      String(user.password)
+    );
+
+    if (!isValid) {
+      user.loginAttempts++; // 비밀번호가 틀린 경우만 증가
+      console.log(`로그인 시도 ${user.loginAttempts}회`);
+
+      // 5회 실패 시 로그인 차단 시간 설정
+      if (user.loginAttempts >= 5) {
+        user.loginSuspendedTime = new Date();
+        console.log("로그인 차단됨: 3초 동안 로그인 불가");
+      }
+
+      await user.save();
+      event.node.res.statusCode = 401;
+      return {
+        success: false,
+        message: `로그인 실패! 현재 로그인 시도: ${user.loginAttempts}회 (5회 초과 시 30분 차단)`,
+      };
+    }
+
+    // 로그인 성공 시 초기화
+    user.loginAttempts = 0;
+    user.lastLogin = new Date();
+    await user.save();
 
     const accessToken = jwt.sign(
       { userId: user._id, username: user.username, role: user.role },
@@ -76,7 +111,7 @@ export default defineEventHandler(async (event) => {
         phone: user.phone,
         address: user.address,
         lastLogin: user.lastLogin,
-        premiumUntil: user.premiumUntil
+        premiumUntil: user.premiumUntil,
       },
     };
   } catch (error: any) {

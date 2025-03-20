@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import type { UserInfo } from "~/types/userInfoTypes";
 
 export const useLoginStore = defineStore("login", () => {
@@ -25,11 +25,6 @@ export const useLoginStore = defineStore("login", () => {
         password,
       });
 
-      if (!response.data.success) {
-        alert(response.data.message || "로그인 실패");
-        return false;
-      }
-
       const userData = response.data.user;
       user.value = userData;
       isLogin.value = true;
@@ -42,10 +37,16 @@ export const useLoginStore = defineStore("login", () => {
       router.push("/").then(() => window.location.reload());
 
       return true;
-    } catch (error) {
-      console.error("로그인 오류:", error);
-      alert("로그인 실패. 다시 시도해주세요.");
-      return false;
+    } catch (error: any) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        alert(error.response.data.message);
+      } else {
+        alert("로그인 중 오류가 발생했습니다.");
+      }
     }
   };
 

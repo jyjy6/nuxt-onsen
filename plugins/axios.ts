@@ -53,6 +53,11 @@ export default defineNuxtPlugin(() => {
     (response) => response, // 성공적인 응답은 그대로 반환
     async (error) => {
       const originalRequest = error.config;
+      
+      // `/api/auth/login` 요청이면 인터셉터 적용 안 함
+      if (originalRequest.url === "/api/auth/login") {
+        return Promise.reject(error);
+      }
 
       // 401 Unauthorized 응답 처리 (토큰 만료 시)
       if (

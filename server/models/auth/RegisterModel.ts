@@ -25,8 +25,8 @@ const registerSchema = new mongoose.Schema(
     role: { type: String, enum: ["user", "admin", "premium"], default: "user" },
     lastLogin: { type: Date },
     loginAttempts: { type: Number, default: 0 },
-    resetPasswordToken: { String },
-    resetPasswordExpire: { Date },
+    resetPasswordToken: { type: String },
+    loginSuspendedTime: { type: Date },
     premiumUntil: { Date },
   },
   { timestamps: true }
