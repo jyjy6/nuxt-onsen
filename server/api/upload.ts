@@ -111,7 +111,8 @@ export default defineEventHandler(async (event) => {
     console.error("Upload error:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error:
+        error instanceof Error ? "에러났음" + error.message : "Unknown error",
     };
   }
 });

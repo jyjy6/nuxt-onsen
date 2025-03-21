@@ -46,7 +46,7 @@ const handleLogin = async () => {
   if (success) {
     username.value = "";
     password.value = "";
-  } 
+  }
 };
 
 const navigateToRegister = () => {

@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineEmits } from "vue";
+import { ref, computed } from "vue";
 import { useS3Upload } from "~/composables/useS3Upload";
 
 const props = defineProps<{
@@ -96,6 +96,7 @@ const confirmFile = async () => {
     selectedFile.value = tempFile.value;
     await uploadToS3(selectedFile.value, false);
     if (uploadedUrl.value) {
+      console.log(props.fieldName);
       emit("updateURL", { fieldName: props.fieldName, url: uploadedUrl.value });
     }
   }

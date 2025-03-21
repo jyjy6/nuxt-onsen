@@ -94,6 +94,7 @@ const router = useRouter();
 const api = useSecureApi();
 
 const fileUploadRefs = ref<Record<string, any>>({});
+
 // formData가 바뀔 때마다 form을 업데이트
 watch(
   () => props.formData,
@@ -117,6 +118,7 @@ const updateURL = (data: { fieldName: string; url: string }) => {
 const submitForm = async () => {
   try {
     // 모든 파일 업로드 컴포넌트의 confirmFile 호출
+
     const confirmPromises = Object.entries(fileUploadRefs.value).map(
       ([fieldName, component]) => {
         return component.confirmFile();

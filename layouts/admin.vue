@@ -46,6 +46,10 @@ const menuItems = [
     title: "IP정보확인",
     path: "/admin/ipList",
   },
+  {
+    title: "회원목록&관리",
+    path: "/admin/memberlist",
+  },
 ];
 </script>
 

@@ -7,10 +7,7 @@ const connectDB = async () => {
       return;
     }
 
-    await mongoose.connect(
-      process.env.DB_URL ||
-        "mongodb+srv://juneyoung6:1q2w3e4r!@cluster0.ewcqt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-    );
+    await mongoose.connect(process.env.DB_URL || "");
     console.log("MongoDB connected successfully");
 
     // 연결 이벤트 리스너 추가

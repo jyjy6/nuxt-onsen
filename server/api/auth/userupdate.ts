@@ -23,6 +23,7 @@ export default defineEventHandler(async (event) => {
 
     // 4. 디코딩된 토큰에서 userId 추출
     const userId = decoded.userId;
+    console.log("수정코드:" + userId);
 
     if (!userId) {
       return { success: false, message: "Invalid token" };
