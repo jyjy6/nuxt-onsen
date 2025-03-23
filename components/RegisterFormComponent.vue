@@ -62,10 +62,20 @@
         label="프로필 이미지를 업로드해주세요!"
         readonly
       />
+      <p>현재 프로필이미지</p>
+      <v-img
+        :src="props.formData?.profileImage"
+        alt="업로드된 이미지"
+        max-width="300"
+        class="preview"
+        style="margin-top: 0"
+      />
+
       <FileUploadComponent
         fieldName="profileImage"
         @updateURL="updateURL"
         style="margin-top: 10px"
+        ref="fileUploadRef"
       />
 
       <v-checkbox
@@ -136,13 +146,13 @@ const form = ref<RegisterForm>({
   address: { country: "", mainAddress: "", subAddress: "" },
 });
 
-watchEffect(() => {
+onMounted(() => {
   if (props.formData) {
     // @ts-ignore
-    form.value = props.formData;
+    form.value = { ...props.formData };
+    //폼에는 props.formData의 딥카피본으로 업데이트. -> 그냥 form.value=props.fromData해버리면
+    // 새로운 프로필이미지를 업로드할 시 v-img의 프로필 이미지(기존 프로필이미지)까지 변경되어버리기때문에.
   }
-});
-onMounted(() => {
   if (props.isPut) {
     termsAgreed.value = true;
     valid.value = true;
@@ -154,17 +164,21 @@ const emailRules = [
   (v: string) => /.+@.+\..+/.test(v) || "유효한 이메일을 입력해주세요",
 ];
 
-const passwordRules = [
-  (v: string) => !!v || (props.isPut ? true : "비밀번호 확인은 필수입니다"),
-  (v: string) => v.length >= 6 || "비밀번호는 최소 6자 이상이어야 합니다",
-  (v: string) => /[0-9]/.test(v) || "숫자를 포함해야 합니다",
-  (v: string) => /[!@#$%^&*]/.test(v) || "특수문자를 포함해야 합니다",
-];
+const passwordRules = props.isPut
+  ? []
+  : [
+      (v: string) => !!v || "비밀번호 확인은 필수입니다",
+      (v: string) => v.length >= 6 || "비밀번호는 최소 6자 이상이어야 합니다",
+      (v: string) => /[0-9]/.test(v) || "숫자를 포함해야 합니다",
+      (v: string) => /[!@#$%^&*]/.test(v) || "특수문자를 포함해야 합니다",
+    ];
 
 const router = useRouter();
 const api = useSecureApi();
+const fileUploadRef = ref<any>(null);
 
 const updateURL = (data: { fieldName: string; url: string }) => {
+  console.log("유알엘업데이트됐음");
   if (data.fieldName && data.url) {
     (form.value as any)[data.fieldName] = data.url;
     console.log(`${data.fieldName} 필드 업데이트: ${data.url}`);
@@ -172,10 +186,15 @@ const updateURL = (data: { fieldName: string; url: string }) => {
 };
 
 const submitForm = async () => {
+  //이미지 파일주소를 S3의 정식 image/ 폴더로 옮기는 작업
+  await fileUploadRef.value?.confirmFile();
+
   if (props.isPut) {
     form.value.username = props.formData?.username as string;
     try {
       const response = await api.securePut(props.apiURL, form.value);
+      console.log(form.value);
+      console.log(props.apiURL);
       alert("회원수정이 완료되었습니다!");
       router.push("/");
     } catch (error) {
@@ -212,3 +231,11 @@ onMounted(() => {
   document.head.appendChild(script);
 });
 </script>
+<style scoped>
+.preview {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+</style>

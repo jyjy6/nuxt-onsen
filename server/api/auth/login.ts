@@ -65,6 +65,8 @@ export default defineEventHandler(async (event) => {
       }
 
       await user.save();
+      console.log("로그인 실패 후 데이터 저장 완료"); // 🔥 저장이 정상적으로 되는지 확인
+
       event.node.res.statusCode = 401;
       return {
         success: false,

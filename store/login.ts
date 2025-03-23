@@ -18,25 +18,31 @@ export const useLoginStore = defineStore("login", () => {
     }
   };
 
-  const login = async (username: string, password: string) => {
+  const login = async (
+    username: string,
+    password: string
+  ): Promise<boolean | undefined> => {
     try {
       const response = await axios.post("/api/auth/login", {
         username,
         password,
       });
 
-      const userData = response.data.user;
-      user.value = userData;
-      isLogin.value = true;
+      if (response.data.success) {
+        const userData = response.data.user;
+        user.value = userData;
+        isLogin.value = true;
 
-      // ✅ 로컬 스토리지에 저장 (새로고침 시 유지)
-      localStorage.setItem("user", JSON.stringify(userData));
-      localStorage.setItem("accessToken", response.data.accessToken);
+        // ✅ 로컬 스토리지에 저장 (새로고침 시 유지)
+        localStorage.setItem("user", JSON.stringify(userData));
+        localStorage.setItem("accessToken", response.data.accessToken);
 
-      alert("로그인 성공!");
-      router.push("/").then(() => window.location.reload());
-
-      return true;
+        alert("로그인 성공!");
+        router.push("/").then(() => window.location.reload());
+      } else {
+        alert(response.data.message || "로그인 실패!");
+      }
+      return;
     } catch (error: any) {
       if (
         error.response &&
