@@ -72,12 +72,14 @@ export const useS3Upload = () => {
         };
         return response.data.url;
       } else {
-        uploadError.value = response.data.error || "업로드 실패";
+        uploadError.value = "에러났음2" + response.data.error || "업로드 실패";
         return null;
       }
     } catch (error) {
       uploadError.value =
-        error instanceof Error ? error.message : "알 수 없는 오류";
+        error instanceof Error
+          ? "에러났음3" + error.message
+          : "알 수 없는 오류";
       return null;
     } finally {
       isUploading.value = false;

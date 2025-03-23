@@ -44,6 +44,7 @@ export const useSecureApi = () => {
     const token = await fetchCsrfToken();
 
     return axios.post(url, data, {
+      //헤더는 미들웨어에서 검증하기위한것 쿠키검증은 필요없음
       headers: {
         "X-CSRF-Token": token,
       },

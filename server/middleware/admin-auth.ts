@@ -7,6 +7,8 @@ export default defineEventHandler(async (event) => {
   if (url.pathname.startsWith("/api/admin/")) {
     // 토큰 가져오기
     const token = getRequestHeader(event, "authorization")?.split(" ")[1];
+    // console.log("토큰");
+    // console.log(token);
 
     if (!token) {
       return createError({
@@ -21,8 +23,6 @@ export default defineEventHandler(async (event) => {
         token,
         process.env.JWT_ACCESS_SECRET_KEY as string
       ) as JwtPayload;
-      console.log("디코드된거:");
-      console.log(decoded);
 
       // admin 권한 확인
       if (decoded.role !== "admin") {
