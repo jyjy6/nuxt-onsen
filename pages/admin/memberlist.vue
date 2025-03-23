@@ -16,7 +16,7 @@ const selectedMembers = ref([]);
 const headers = [
   { title: "프로필", key: "profileImage", sortable: false },
   { title: "이름", key: "name", sortable: true },
-  { title: "아이디", key: "userId", sortable: true },
+  { title: "아이디", key: "username", sortable: true },
   { title: "이메일", key: "email", sortable: true },
   { title: "역할", key: "role", sortable: true },
   { title: "최근 로그인", key: "lastLogin", sortable: true },
