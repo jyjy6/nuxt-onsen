@@ -11,11 +11,7 @@ definePageMeta({
 const allMembers = ref<UserInfo[]>([]);
 const loading = ref(true);
 const search = ref("");
-const options = ref({
-  page: 1,
-  itemsPerPage: 10,
-  sortBy: [{ key: "name", order: "asc" as "asc" | "desc" }],
-});
+
 const selectedMembers = ref([]);
 const headers = [
   { title: "프로필", key: "profileImage", sortable: false },
@@ -32,15 +28,91 @@ const editDialog = ref(false);
 const deleteDialog = ref(false);
 const currentMember = ref<UserInfo | null>(null);
 
+const options = ref({
+  page: 1,
+  itemsPerPage: 10,
+  sortBy: [{ key: "name", order: "asc" as "asc" | "desc" }],
+});
+
+const totalItems = ref(0);
 onMounted(async () => {
   try {
     const response = await axios.get("/api/admin/members");
     allMembers.value = response.data.data;
+    totalItems.value = response.data.total;
+
+    console.log(totalItems.value);
   } catch (error) {
     console.error("멤버 목록을 불러오는 중 오류가 발생했습니다:", error);
   } finally {
     loading.value = false;
   }
+});
+const router = useRouter();
+const route = useRoute();
+
+const currentPage = ref(Number(route.query.page) || 1);
+// 페이지 변경 시 URL 쿼리 업데이트
+const onPageChange = (page: any) => {
+  router.push({ query: { ...route.query, page } });
+};
+
+// URL 쿼리가 변경되면 currentPage 업데이트
+watch(
+  () => route.query.page,
+  (newPage) => {
+    currentPage.value = Number(newPage) || 1;
+    // 데이터 재요청 등 추가 로직
+  }
+);
+
+// options 변경 시 서버에서 데이터 가져오기
+const queryParams = computed(() => ({
+  page: route.query.page,
+  itemsPerPage: route.query.itemsPerPage,
+  search: search.value, // search도 반응형 상태여야 합니다.
+  sortBy: options.value.sortBy[0]?.key,
+  sortOrder: options.value.sortBy[0]?.order,
+}));
+
+watch(
+  queryParams,
+  async (newParams) => {
+    loading.value = true;
+    try {
+      const response = await axios.get("/api/admin/members", {
+        params: {
+          page: newParams.page,
+          itemsPerPage: newParams.itemsPerPage,
+          sortBy: newParams.sortBy,
+          sortOrder: newParams.sortOrder,
+          search: newParams.search,
+        },
+      });
+      allMembers.value = response.data.data;
+      totalItems.value = response.data.total;
+    } catch (error) {
+      console.error("멤버 목록을 불러오는 중 오류가 발생했습니다:", error);
+    } finally {
+      loading.value = false;
+    }
+    console.log(totalItems.value);
+  },
+  { deep: true, immediate: true }
+);
+
+// 검색어 변경 시에도 데이터 다시 불러오기
+watch(
+  search,
+  () => {
+    options.value.page = 1; // 검색 시 첫 페이지로 리셋
+  },
+  { deep: true }
+);
+
+const totalPages = computed(() => {
+  const perPage = Number(route.query.itemsPerPage) || 10;
+  return Math.ceil(Number(totalItems.value) / perPage);
 });
 
 const filteredMembers = computed(() => {
@@ -83,6 +155,8 @@ const confirmDelete = (member: UserInfo) => {
   deleteDialog.value = true;
 };
 
+const api = useSecureApi();
+
 const deleteMember = async () => {
   if (!currentMember.value?._id) return;
 
@@ -91,18 +165,15 @@ const deleteMember = async () => {
     allMembers.value = allMembers.value.filter(
       (m) => m._id !== currentMember.value?._id
     );
-    deleteDialog.value = false;
   } catch (error) {
     console.error("멤버 삭제 중 오류가 발생했습니다:", error);
   }
 };
 
 const saveMember = async () => {
-  if (!currentMember.value) return;
-
   try {
     const response = await axios.put(
-      `/api/admin/members/${currentMember.value._id}`,
+      `/api/admin/members/${currentMember.value?._id}`,
       currentMember.value
     );
     const index = allMembers.value.findIndex(
@@ -152,6 +223,7 @@ const saveMember = async () => {
         item-value="_id"
         class="elevation-0"
         @update:options="options = $event"
+        show-select
       >
         <template #[`item.profileImage`]="{ item }">
           <div class="d-flex align-center py-2">
@@ -236,24 +308,37 @@ const saveMember = async () => {
         </template>
 
         <template #bottom>
-          <div class="d-flex align-center pa-4">
-            <v-btn
-              color="error"
-              variant="outlined"
-              :disabled="selectedMembers.length === 0"
-              class="me-4"
-            >
-              선택 삭제 ({{ selectedMembers.length }})
-            </v-btn>
+          <div class="d-flex flex-column">
+            <div class="d-flex align-center pa-4">
+              <v-btn
+                color="error"
+                variant="outlined"
+                :disabled="selectedMembers.length === 0"
+                class="me-4"
+              >
+                선택 삭제 ({{ selectedMembers.length }})
+              </v-btn>
 
-            <v-btn color="success" variant="elevated" prepend-icon="mdi-plus">
-              새 멤버 추가
-            </v-btn>
+              <v-btn color="success" variant="elevated" prepend-icon="mdi-plus">
+                새 멤버 추가
+              </v-btn>
 
-            <v-spacer></v-spacer>
+              <v-spacer></v-spacer>
 
-            <div class="text-caption text-grey">
-              총 {{ filteredMembers.length }}명의 멤버
+              <div class="text-caption text-grey">
+                총 {{ filteredMembers.length }}명의 멤버
+              </div>
+            </div>
+
+            <!-- 페이지네이션 컨트롤 추가 -->
+            <div class="d-flex justify-center py-2">
+              <v-pagination
+                v-if="totalPages > 0"
+                v-model="currentPage"
+                :length="totalPages"
+                :total-visible="totalPages"
+                @update:modelValue="onPageChange"
+              ></v-pagination>
             </div>
           </div>
         </template>
