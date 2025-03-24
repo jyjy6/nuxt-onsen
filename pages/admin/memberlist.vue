@@ -34,14 +34,13 @@ const options = ref({
   sortBy: [{ key: "name", order: "asc" as "asc" | "desc" }],
 });
 
+//반환된 총 회원 숫자
 const totalItems = ref(0);
 onMounted(async () => {
   try {
     const response = await axios.get("/api/admin/members");
     allMembers.value = response.data.data;
     totalItems.value = response.data.total;
-
-    console.log(totalItems.value);
   } catch (error) {
     console.error("멤버 목록을 불러오는 중 오류가 발생했습니다:", error);
   } finally {
@@ -69,7 +68,7 @@ watch(
 // options 변경 시 서버에서 데이터 가져오기
 const queryParams = computed(() => ({
   page: route.query.page,
-  itemsPerPage: route.query.itemsPerPage,
+  itemsPerPage: route.query.itemsPerPage, //이부분은 지워도됨 기본적으로 10개로 나오는거라
   search: search.value, // search도 반응형 상태여야 합니다.
   sortBy: options.value.sortBy[0]?.key,
   sortOrder: options.value.sortBy[0]?.order,
@@ -83,7 +82,7 @@ watch(
       const response = await axios.get("/api/admin/members", {
         params: {
           page: newParams.page,
-          itemsPerPage: newParams.itemsPerPage,
+          itemsPerPage: newParams.itemsPerPage, //이부분은 지워도됨 기본적으로 10개로 나오는거라
           sortBy: newParams.sortBy,
           sortOrder: newParams.sortOrder,
           search: newParams.search,
@@ -122,7 +121,7 @@ const filteredMembers = computed(() => {
   return allMembers.value.filter(
     (member) =>
       member.name.toLowerCase().includes(searchLower) ||
-      member.userId.toLowerCase().includes(searchLower) ||
+      member._id?.toLowerCase().includes(searchLower) ||
       member.email.toLowerCase().includes(searchLower) ||
       member.role.toLowerCase().includes(searchLower)
   );
@@ -158,30 +157,24 @@ const confirmDelete = (member: UserInfo) => {
 const api = useSecureApi();
 
 const deleteMember = async () => {
-  if (!currentMember.value?._id) return;
-
-  try {
-    await axios.delete(`/api/admin/members/${currentMember.value._id}`);
-    allMembers.value = allMembers.value.filter(
-      (m) => m._id !== currentMember.value?._id
-    );
-  } catch (error) {
-    console.error("멤버 삭제 중 오류가 발생했습니다:", error);
-  }
+  alert("삭제는 할수없습니다");
 };
 
 const saveMember = async () => {
   try {
-    const response = await axios.put(
-      `/api/admin/members/${currentMember.value?._id}`,
+    const response = await api.securePut(
+      `/api/admin/members/userupdate`,
       currentMember.value
     );
+    console.log("ㅇㅇ잘바뀌었음");
+    console.log(response.data.message);
     const index = allMembers.value.findIndex(
       (m) => m._id === currentMember.value?._id
     );
     if (index !== -1) {
-      allMembers.value[index] = response.data.data;
+      allMembers.value[index] = response.data.user;
     }
+    alert("회원정보가 수정되었습니다.");
     editDialog.value = false;
   } catch (error) {
     console.error("멤버 정보 수정 중 오류가 발생했습니다:", error);
@@ -262,7 +255,7 @@ const saveMember = async () => {
             :color="
               item.role === 'admin'
                 ? 'error'
-                : item.role === 'moderator'
+                : item.role === 'premium'
                 ? 'warning'
                 : 'info'
             "
@@ -367,7 +360,7 @@ const saveMember = async () => {
 
               <v-col cols="12" md="6">
                 <v-text-field
-                  v-model="currentMember.userId"
+                  v-model="currentMember.username"
                   label="아이디"
                   variant="outlined"
                   density="comfortable"
@@ -387,7 +380,7 @@ const saveMember = async () => {
                 <v-select
                   v-model="currentMember.role"
                   label="역할"
-                  :items="['user', 'moderator', 'admin']"
+                  :items="['user', 'premium', 'admin']"
                   variant="outlined"
                   density="comfortable"
                 ></v-select>
@@ -491,7 +484,7 @@ const saveMember = async () => {
         <v-card-text class="pa-4 mt-4">
           <p class="text-body-1">
             <strong>{{ currentMember?.name }}</strong> ({{
-              currentMember?.userId
+              currentMember?._id
             }}) 멤버를 정말로 삭제하시겠습니까?
           </p>
           <p class="text-caption text-grey mt-2">
