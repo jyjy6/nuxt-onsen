@@ -21,6 +21,12 @@ export default defineEventHandler(async (event) => {
     sortOptions[sortBy] = sortOrder;
 
     // 검색 파라미터
+    //     2️⃣ search 값이 있을 경우
+    // $or 연산자를 사용하여 하나라도 조건을 만족하면 검색 결과에 포함되도록 함.
+    // $regex를 사용하여 부분 일치 검색을 수행함.
+    // $options: "i"를 추가하여 대소문자 구분 없이 검색할 수 있도록 설정함.
+    //     2️⃣ search 값이 없을 경우
+    // 빈 객체 {}를 반환하여 검색 필터를 적용하지 않음 → 즉, 모든 데이터를 가져옴.
     const search = String(query.search || "");
     const searchQuery = search
       ? {
@@ -34,17 +40,14 @@ export default defineEventHandler(async (event) => {
       : {};
 
     // 데이터 가져오기 (페이지네이션, 정렬, 검색 적용)
+    // skip은 최초 몇개의 데이터를 skip(제외)할껀지, limit은 몇 개의 데이터를 가져올건지
     const members = await MembersModel.find(searchQuery)
       .sort(sortOptions)
       .skip(skip)
       .limit(itemsPerPage);
 
-    // 전체 항목 수 가져오기 (페이지네이션에 필요)
+    // 전체 항목 숫자 가져오기 (페이지네이션에 필요)
     const total = await MembersModel.countDocuments(searchQuery);
-
-    console.log(page);
-    console.log(itemsPerPage);
-    console.log(total);
 
     return {
       success: true,

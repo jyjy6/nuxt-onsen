@@ -1,9 +1,9 @@
-// server/api/user/update.ts
+// server/api/admin/user/update.ts
 import { defineEventHandler, readBody, getRequestHeader } from "h3";
 import bcrypt from "bcryptjs";
-import RegisterModel from "../../models/auth/RegisterModel";
+import RegisterModel from "~/server/models/auth/RegisterModel";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { UpdateUserData } from "~/types/userInfoTypes";
+import { AdminUpdateUserData } from "~/types/userInfoTypes";
 
 export default defineEventHandler(async (event) => {
   try {
@@ -22,37 +22,55 @@ export default defineEventHandler(async (event) => {
       process.env.JWT_ACCESS_SECRET_KEY || ""
     ) as JwtPayload;
 
-    // 4. 디코딩된 토큰에서 userId 추출
-    const userId = decoded.userId;
-    if (!userId) {
+    // 4. 디코딩된 토큰에서 userId 및 role 추출
+    const adminId = decoded.userId;
+    const adminRole = decoded.role;
+    console.log("운영자아이디:" + adminId);
+    console.log("운영자롤:");
+    console.log(decoded.role);
+
+    if (!adminId) {
       return { success: false, message: "Invalid token" };
     }
 
-    // 요청 데이터 읽기
-    const body = (await readBody(event)) as UpdateUserData;
-
-    // 현재 사용자 정보 조회
-    const currentUser = await RegisterModel.findById(userId);
-    if (!currentUser) {
-      return { success: false, message: "User not found" };
+    // 관리자 권한 확인
+    if (adminRole !== "admin" && adminRole !== "superadmin") {
+      return { success: false, message: "Unauthorized access" };
     }
 
-    // 변경 불가능한 필드는 기존 값으로 유지하고, 업데이트할 데이터 준비
-    const updatedData: UpdateUserData = {
-      // username은 변경 불가능 - 기존 값 유지
-      name: body.name || currentUser.name,
-      email: body.email || currentUser.email,
-      phone: body.phone || currentUser.phone || "",
-      address: {
-        country: body.address?.country || currentUser.address?.country || "",
-        mainAddress:
-          body.address?.mainAddress || currentUser.address?.mainAddress || "",
-        subAddress:
-          body.address?.subAddress || currentUser.address?.subAddress || "",
-      },
-      profileImage: body.profileImage || currentUser.profileImage,
-    };
+    // 요청 데이터 읽기
+    const body = (await readBody(event)) as AdminUpdateUserData;
+    console.log("요청데이터");
+    console.log(body);
 
+    if (!body._id) {
+      return { success: false, message: "User ID is required" };
+    }
+
+    // 대상 사용자 정보 조회
+    const targetUser = await RegisterModel.findById(body._id);
+    if (!targetUser) {
+      return { success: false, message: "Target user not found" };
+    }
+
+    console.log("타겟유저");
+    console.log(targetUser);
+    // 업데이트할 데이터 준비
+    const updatedData: any = {
+      // username은 변경 불가능 - 기존 값 유지
+      username: targetUser.username,
+      name: body.name || targetUser.name,
+      email: body.email || targetUser.email,
+      phone: body.phone || targetUser.phone || "",
+      address: body.address || targetUser.address || {},
+      profileImage: body.profileImage || targetUser.profileImage,
+    };
+    console.log("업뎃데이터");
+    console.log(updatedData);
+
+    // 운영자 전용 필드 업데이트
+    if (body.role) updatedData.role = body.role;
+    if (body.premiumUntil) updatedData.premiumUntil = body.premiumUntil;
     // 비밀번호는 변경되었을 경우에만 해시 처리
     if (body.password) {
       updatedData.password = await bcrypt.hash(body.password, 10);
@@ -60,7 +78,7 @@ export default defineEventHandler(async (event) => {
 
     // 데이터 업데이트
     const updatedUser = await RegisterModel.findByIdAndUpdate(
-      userId,
+      body._id, // 여기서는 특정 사용자 ID를 사용
       { $set: updatedData },
       { new: true, runValidators: true }
     );
@@ -74,7 +92,7 @@ export default defineEventHandler(async (event) => {
 
     return {
       success: true,
-      message: "User updated successfully",
+      message: "User updated successfully by admin",
       user: userWithoutPassword,
     };
   } catch (error) {
@@ -85,7 +103,7 @@ export default defineEventHandler(async (event) => {
       return { success: false, message: "Token expired" };
     }
 
-    console.error("Update user error:", error);
+    console.error("Admin update user error:", error);
     return { success: false, message: "Failed to update user" };
   }
 });
