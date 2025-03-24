@@ -13,12 +13,16 @@
             <p>환영합니다!!!! 회원 정보를 확인하세요.</p>
           </v-card-text>
         </v-card>
-        <v-card class="mx-auto" max-width="500">
+        <v-card class="mx-auto" max-width="500" v-if="isLogin">
           <v-card-text>
             <!-- 프로필 이미지 -->
             <v-row justify="center">
               <v-avatar size="200" style="margin: 15px">
-                <img :src="user?.profileImage" alt="프로필 이미지" />
+                <img
+                  :src="user?.profileImage"
+                  alt="프로필 이미지"
+                  style="object-fit: contain; width: 100%; height: 100%"
+                />
               </v-avatar>
             </v-row>
 

@@ -28,9 +28,9 @@ export interface UpdateUserData {
   name?: string;
   email?: string;
   phone: string;
-  address?: {
+  address: {
     country?: string;
-    mainAddress?: string;
+    mainAddress: string;
     subAddress?: string;
   };
   profileImage?: string;
