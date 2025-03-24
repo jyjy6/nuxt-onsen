@@ -15,7 +15,7 @@ const search = ref("");
 const selectedMembers = ref([]);
 const headers = [
   { title: "프로필", key: "profileImage", sortable: false },
-  { title: "이름", key: "name", sortable: true },
+  { title: "닉네임", key: "name", sortable: true },
   { title: "아이디", key: "username", sortable: true },
   { title: "이메일", key: "email", sortable: true },
   { title: "역할", key: "role", sortable: true },
@@ -179,6 +179,23 @@ const saveMember = async () => {
   } catch (error) {
     console.error("멤버 정보 수정 중 오류가 발생했습니다:", error);
   }
+};
+
+onMounted(() => {
+  const script = document.createElement("script");
+  script.src = "//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
+  script.onload = () => console.log("카카오 주소 API 로드 완료");
+  document.head.appendChild(script);
+});
+const openKakaoAddressSearch = () => {
+  //@ts-ignore
+  new window.daum.Postcode({
+    oncomplete: (data: { roadAddress: string }) => {
+      if (currentMember.value) {
+        currentMember.value.address.mainAddress = data.roadAddress;
+      }
+    },
+  }).open();
 };
 </script>
 
@@ -352,9 +369,10 @@ const saveMember = async () => {
               <v-col cols="12" md="6">
                 <v-text-field
                   v-model="currentMember.name"
-                  label="이름"
+                  label="닉네임"
                   variant="outlined"
                   density="comfortable"
+                  readonly
                 ></v-text-field>
               </v-col>
 
@@ -364,6 +382,7 @@ const saveMember = async () => {
                   label="아이디"
                   variant="outlined"
                   density="comfortable"
+                  readonly
                 ></v-text-field>
               </v-col>
 
@@ -373,6 +392,7 @@ const saveMember = async () => {
                   label="이메일"
                   variant="outlined"
                   density="comfortable"
+                  readonly
                 ></v-text-field>
               </v-col>
 
@@ -406,11 +426,19 @@ const saveMember = async () => {
               </v-col>
 
               <v-col cols="12">
+                <v-avatar size="150" style="margin: 15px">
+                  <img
+                    :src="currentMember.profileImage"
+                    alt="프로필 이미지"
+                    style="object-fit: contain; width: 100%; height: 100%"
+                  />
+                </v-avatar>
                 <v-text-field
                   v-model="currentMember.profileImage"
                   label="프로필 이미지 URL"
                   variant="outlined"
                   density="comfortable"
+                  readonly
                 ></v-text-field>
               </v-col>
 
@@ -441,6 +469,8 @@ const saveMember = async () => {
                             label="기본 주소"
                             variant="outlined"
                             density="comfortable"
+                            readonly
+                            @click="openKakaoAddressSearch"
                           ></v-text-field>
                         </v-col>
 
