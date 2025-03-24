@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { faker } from "@faker-js/faker";
-import Register from "../models/auth/RegisterModel.js"; // `.js` 확장자로 변경
+import Register from "../models/auth/RegisterModel-forFake";
 import dotenv from "dotenv";
 
 dotenv.config();

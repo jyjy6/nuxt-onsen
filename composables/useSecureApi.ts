@@ -26,6 +26,7 @@ export const useSecureApi = () => {
     error.value = null;
 
     try {
+      //POST 요청으로 변경하고, Cache-Control: no-store 헤더를 추가하여 캐싱을 방지하는 것이 더 안전. 
       const response = await axios.get("/api/auth/csrf");
       csrfToken.value = response.data.csrfToken;
       return csrfToken.value;
