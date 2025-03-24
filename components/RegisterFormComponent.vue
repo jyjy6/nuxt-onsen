@@ -1,20 +1,52 @@
 <template>
   <v-container>
     <v-form v-model="valid" ref="registerForm">
-      <v-text-field
-        v-model="form.username"
-        label="아이디"
-        :rules="[(v) => !!v || '아이디는 필수입니다']"
-        required
-        :disabled="props.isPut"
-      />
+      <div class="d-flex align-center">
+        <v-text-field
+          v-model="form.username"
+          label="아이디"
+          :rules="[(v) => !!v || '아이디는 필수입니다']"
+          required
+          :disabled="props.isPut || isUsernameDuplicateChecked"
+          :hint="usernameHint"
+          :error-messages="usernameError"
+        />
+        <v-btn
+          v-if="!props.isPut"
+          :disabled="!form.username || isUsernameDuplicateChecked"
+          @click="checkUsernameDuplicate"
+          color="info"
+          :loading="checkingUsername"
+          size="small"
+          height="36"
+          class="mt-3"
+        >
+          {{ isUsernameDuplicateChecked ? "확인완료" : "중복확인" }}
+        </v-btn>
+      </div>
 
-      <v-text-field
-        v-model="form.name"
-        label="이름"
-        :rules="[(v) => !!v || '이름은 필수입니다']"
-        required
-      />
+      <div class="d-flex align-center">
+        <v-text-field
+          v-model="form.name"
+          label="닉네임"
+          required
+          :disabled="isNameDuplicateChecked"
+          :hint="nameHint"
+          :error-messages="nameError"
+          class="mr-2"
+        />
+        <v-btn
+          :disabled="!form.name || isNameDuplicateChecked"
+          @click="checkNameDuplicate"
+          color="info"
+          :loading="checkingName"
+          size="small"
+          height="36"
+          class="mt-3"
+        >
+          {{ isNameDuplicateChecked ? "확인완료" : "중복확인" }}
+        </v-btn>
+      </div>
 
       <v-text-field
         v-model="form.email"
@@ -152,12 +184,103 @@ onMounted(() => {
     form.value = { ...props.formData };
     //폼에는 props.formData의 딥카피본으로 업데이트. -> 그냥 form.value=props.fromData해버리면
     // 새로운 프로필이미지를 업로드할 시 v-img의 프로필 이미지(기존 프로필이미지)까지 변경되어버리기때문에.
+
+    if (props.isPut) {
+      isUsernameDuplicateChecked.value = true;
+      if (props.formData.name === form.value.name) {
+        isNameDuplicateChecked.value = true;
+      }
+    }
   }
   if (props.isPut) {
     termsAgreed.value = true;
     valid.value = true;
   }
 });
+// 중복 체크 상태 관리
+const isUsernameDuplicateChecked = ref(false);
+const isNameDuplicateChecked = ref(false);
+const checkingUsername = ref(false);
+const checkingName = ref(false);
+const usernameError = ref("");
+const nameError = ref("");
+const usernameHint = ref("");
+const nameHint = ref("");
+
+// 필드값이 변경되면 중복 체크 상태 초기화
+watch(
+  () => form.value.username,
+  () => {
+    if (isUsernameDuplicateChecked.value) {
+      isUsernameDuplicateChecked.value = false;
+      usernameHint.value = "";
+    }
+  }
+);
+
+watch(
+  () => form.value.name,
+  () => {
+    if (isNameDuplicateChecked.value) {
+      isNameDuplicateChecked.value = false;
+      nameHint.value = "";
+    }
+  }
+);
+
+// 아이디 중복 확인
+const checkUsernameDuplicate = async () => {
+  if (!form.value.username) return;
+
+  checkingUsername.value = true;
+  usernameError.value = "";
+  usernameHint.value = "";
+
+  try {
+    const response = await api.securePost("/api/auth/check-username", {
+      username: form.value.username,
+    });
+
+    if (response.data.available) {
+      isUsernameDuplicateChecked.value = true;
+      usernameHint.value = "사용 가능한 아이디입니다";
+    } else {
+      usernameError.value = "이미 사용 중인 아이디입니다";
+    }
+  } catch (error) {
+    console.error("아이디 중복 확인 실패:", error);
+    usernameError.value = "중복 확인 중 오류가 발생했습니다";
+  } finally {
+    checkingUsername.value = false;
+  }
+};
+
+// 닉네임 중복 확인
+const checkNameDuplicate = async () => {
+  if (!form.value.name) return;
+
+  checkingName.value = true;
+  nameError.value = "";
+  nameHint.value = "";
+
+  try {
+    const response = await api.securePost("/api/auth/check-name", {
+      name: form.value.name,
+    });
+
+    if (response.data.available) {
+      isNameDuplicateChecked.value = true;
+      nameHint.value = "사용 가능한 닉네임입니다";
+    } else {
+      nameError.value = "이미 사용 중인 닉네임입니다";
+    }
+  } catch (error) {
+    console.error("닉네임 중복 확인 실패:", error);
+    nameError.value = "중복 확인 중 오류가 발생했습니다";
+  } finally {
+    checkingName.value = false;
+  }
+};
 
 const emailRules = [
   (v: string) => !!v || "이메일은 필수입니다",
@@ -186,6 +309,15 @@ const updateURL = (data: { fieldName: string; url: string }) => {
 };
 
 const submitForm = async () => {
+  if (!props.isPut && !isUsernameDuplicateChecked.value) {
+    alert("아이디 중복 확인이 필요합니다.");
+    return;
+  }
+  if (!isNameDuplicateChecked.value) {
+    alert("닉네임 중복 확인이 필요합니다.");
+    return;
+  }
+
   //이미지 파일주소를 S3의 정식 image/ 폴더로 옮기는 작업
   await fileUploadRef.value?.confirmFile();
 
@@ -218,7 +350,7 @@ const submitForm = async () => {
 const openKakaoAddressSearch = () => {
   //@ts-ignore
   new window.daum.Postcode({
-    oncomplete: (data: any) => {
+    oncomplete: (data: { roadAddress: string }) => {
       form.value.address.mainAddress = data.roadAddress; // 도로명 주소 입력
     },
   }).open();
@@ -237,5 +369,9 @@ onMounted(() => {
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
+}
+
+v-form > * {
+  max-width: 50%;
 }
 </style>

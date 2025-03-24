@@ -3,7 +3,7 @@ import { defineEventHandler, readBody, getRequestHeader } from "h3";
 import bcrypt from "bcryptjs";
 import RegisterModel from "../../models/auth/RegisterModel";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { UpdateUserData } from "~/types/userInfoTypes";
+import { AdminUpdateUserData, UpdateUserData } from "~/types/userInfoTypes";
 
 export default defineEventHandler(async (event) => {
   try {
@@ -32,9 +32,19 @@ export default defineEventHandler(async (event) => {
     const body = (await readBody(event)) as UpdateUserData;
 
     // 현재 사용자 정보 조회
-    const currentUser = await RegisterModel.findById(userId);
+    const currentUser: AdminUpdateUserData | null =
+      await RegisterModel.findById(userId);
     if (!currentUser) {
       return { success: false, message: "User not found" };
+    }
+
+    //악질유저가 프론트에서 제한한 닉네임 중복 뚫고 보냈을시
+    const alreadyName = await RegisterModel.findByName(body.name as string);
+    if (alreadyName?._id != userId) {
+      return {
+        success: false,
+        message: "뭐 맘대로 개발자도구만져서 닉네임 바꾸고 그러지 마세요",
+      };
     }
 
     // 변경 불가능한 필드는 기존 값으로 유지하고, 업데이트할 데이터 준비
@@ -46,7 +56,7 @@ export default defineEventHandler(async (event) => {
       address: {
         country: body.address?.country || currentUser.address?.country || "",
         mainAddress:
-          body.address?.mainAddress || currentUser.address?.mainAddress || "",
+          body.address.mainAddress || currentUser?.address.mainAddress,
         subAddress:
           body.address?.subAddress || currentUser.address?.subAddress || "",
       },
