@@ -17,7 +17,6 @@ export interface BaseUserInfo {
 
 // 일반 사용자 정보 인터페이스
 export interface UserInfo extends BaseUserInfo {
-  _id: string;
   role: string;
   lastLogin: string;
   premiumUntil?: string;
@@ -38,10 +37,13 @@ export interface UpdateUserData {
 }
 
 // 운영자용 사용자 데이터 업데이트 인터페이스 (운영자가 수정 가능한 필드)
-export interface AdminUpdateUserData extends UpdateUserData {
+export interface AdminUpdateUserData extends BaseUserInfo {
   _id: string; // 운영자는 특정 사용자 ID를 지정해야 함
+  password?: string;
   role?: string; // 역할 변경 가능
   premiumUntil?: string; // 프리미엄 만료일 설정 가능
-
   // 기타 운영자만 수정 가능한 필드 추가
+  loginSuspendedTime?: Date | null;
+  loginAttempts: number;
+  lastLogin: Date;
 }

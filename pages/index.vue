@@ -427,6 +427,7 @@ const openModal = (item: Content) => {
         </v-btn>
       </v-container>
 
+      <!-- 방송일람 페이지 -->
       <v-container style="width: 75%" v-if="buttons[0].active">
         <p style="color: #43b149; font-size: 1.2rem; margin-bottom: 15px">
           おすすめ番組

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export default defineNuxtPlugin(() => {
+export default defineNuxtPlugin((nuxtApp) => {
   // 액세스 토큰을 재발급받는 함수
   const refreshAccessToken = async () => {
     console.log("refreshAccessToken: Function invoked");
@@ -25,67 +25,87 @@ export default defineNuxtPlugin(() => {
     }
   };
 
-  // Axios 요청 인터셉터
-  axios.interceptors.request.use(
-    async (config) => {
-      // 로컬스토리지에서 액세스 토큰 가져오기
-      const accessToken = localStorage.getItem("accessToken");
+  // Nuxt 앱 컨텍스트에 axios 인터셉터 추가
+  const addAxiosInterceptors = () => {
+    // 요청 인터셉터
+    axios.interceptors.request.use(
+      async (config) => {
+        console.log("Axios Request Interceptor - Start");
 
-      // 액세스 토큰이 존재하면 Authorization 헤더에 추가
-      if (accessToken) {
-        config.headers["Authorization"] = `Bearer ${accessToken}`;
-        console.log(
-          "Authorization Header Added:",
-          config.headers["Authorization"]
-        );
-      }
+        // 로컬스토리지에서 액세스 토큰 가져오기
+        const accessToken = localStorage.getItem("accessToken");
 
-      return config;
-    },
-    (error) => {
-      console.error("Request interceptor error:", error);
-      return Promise.reject(error);
-    }
-  );
+        // 액세스 토큰이 존재하면 Authorization 헤더에 추가
+        if (accessToken) {
+          config.headers["Authorization"] = `Bearer ${accessToken}`;
+          console.log(
+            "Authorization Header Added:",
+            config.headers["Authorization"]
+          );
+        }
 
-  // Axios 응답 인터셉터
-  axios.interceptors.response.use(
-    (response) => response, // 성공적인 응답은 그대로 반환
-    async (error) => {
-      const originalRequest = error.config;
-
-      // `/api/auth/login` 요청이면 인터셉터 적용 안 함
-      if (originalRequest.url === "/api/auth/login") {
+        console.log("Axios Request Interceptor - End");
+        return config;
+      },
+      (error) => {
+        console.error("Request interceptor error:", error);
         return Promise.reject(error);
       }
+    );
 
-      // 401 Unauthorized 응답 처리 (토큰 만료 시)
-      if (
-        error.response &&
-        error.response.status === 401 &&
-        !originalRequest._retry
-      ) {
-        originalRequest._retry = true; // 재시도 플래그 설정
+    // 응답 인터셉터
+    axios.interceptors.response.use(
+      (response) => {
+        console.log("Axios Response Interceptor - Success");
+        return response;
+      },
+      async (error) => {
+        console.log("Axios Response Interceptor - Error");
+        const originalRequest = error.config;
 
-        try {
-          console.log("Attempting to refresh access token...");
-
-          // 새로운 액세스 토큰 발급
-          const newAccessToken = await refreshAccessToken();
-          console.log("New access token acquired:", newAccessToken);
-
-          // 원래 요청에 새로운 액세스 토큰 추가
-          originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
-
-          // 원래 요청 재시도
-          return axios(originalRequest);
-        } catch (refreshError) {
-          console.error("Failed to refresh access token:", refreshError);
-          return Promise.reject(refreshError); // 리프레시 실패 시 에러 반환
+        // `/api/auth/login` 요청이면 인터셉터 적용 안 함
+        if (originalRequest.url === "/api/auth/login") {
+          console.log("Login request, skipping interceptor");
+          return Promise.reject(error);
         }
-      }
 
-      return Promise.reject(error); // 다른 에러는 그대로 반환
-    }
-  );
+        // 401 Unauthorized 응답 처리 (토큰 만료 시)
+        if (
+          error.response &&
+          error.response.status === 401 &&
+          !originalRequest._retry
+        ) {
+          console.log("401 Unauthorized, attempting token refresh");
+          originalRequest._retry = true; // 재시도 플래그 설정
+
+          try {
+            // 새로운 액세스 토큰 발급
+            console.log("액세스토큰 발급");
+            const newAccessToken = await refreshAccessToken();
+            console.log("New access token acquired:", newAccessToken);
+
+            // 원래 요청에 새로운 액세스 토큰 추가
+            originalRequest.headers[
+              "Authorization"
+            ] = `Bearer ${newAccessToken}`;
+
+            console.log("액세스토큰 발급완료");
+            // 원래 요청 재시도
+            return axios(originalRequest);
+          } catch (refreshError) {
+            console.error("Failed to refresh access token:", refreshError);
+            return Promise.reject(refreshError);
+          }
+        }
+
+        return Promise.reject(error);
+      }
+    );
+  };
+
+  // Nuxt 앱이 준비되면 인터셉터 추가
+  nuxtApp.hook("app:mounted", () => {
+    console.log("Nuxt App Mounted - Adding Axios Interceptors");
+    addAxiosInterceptors();
+  });
 });

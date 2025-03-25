@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import RegisterModel from "~/server/models/auth/RegisterModel";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { AdminUpdateUserData } from "~/types/userInfoTypes";
+import { IUser } from "~/types/userInfoTypes";
 
 export default defineEventHandler(async (event) => {
   try {
@@ -48,7 +49,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // 대상 사용자 정보 조회
-    const targetUser = await RegisterModel.findById(body._id);
+    const targetUser = await RegisterModel.findById(body._id) as IUser;
     if (!targetUser) {
       return { success: false, message: "Target user not found" };
     }
@@ -77,18 +78,10 @@ export default defineEventHandler(async (event) => {
     }
 
     // 데이터 업데이트
-    const updatedUser = await RegisterModel.findByIdAndUpdate(
-      body._id, // 여기서는 특정 사용자 ID를 사용
-      { $set: updatedData },
-      { new: true, runValidators: true }
-    );
-
-    if (!updatedUser) {
-      return { success: false, message: "User update failed" };
-    }
+    await targetUser.save();
 
     // 민감한 정보 제외하고 응답
-    const { password, ...userWithoutPassword } = updatedUser.toObject();
+    const { password, ...userWithoutPassword } = targetUser.toObject();
 
     return {
       success: true,

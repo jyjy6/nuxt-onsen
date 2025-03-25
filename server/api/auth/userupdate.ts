@@ -17,13 +17,20 @@ export default defineEventHandler(async (event) => {
     const token = authHeader.substring(7);
 
     // 3. JWT 토큰 검증 및 디코딩
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_ACCESS_SECRET_KEY || ""
-    ) as JwtPayload;
+    let decoded;
+    try {
+      decoded = jwt.verify(
+        token,
+        process.env.JWT_ACCESS_SECRET_KEY || ""
+      ) as JwtPayload;
+    } catch (error) {
+      console.error("JWT 검증 오류:", error);
+      return { success: false, message: "Invalid token" };
+    }
 
     // 4. 디코딩된 토큰에서 userId 추출
     const userId = decoded.userId;
+    console.log(userId);
     if (!userId) {
       return { success: false, message: "Invalid token" };
     }
@@ -40,7 +47,7 @@ export default defineEventHandler(async (event) => {
 
     //악질유저가 프론트에서 제한한 닉네임 중복 뚫고 보냈을시
     const alreadyName = await RegisterModel.findByName(body.name as string);
-    if (alreadyName?._id != userId) {
+    if (alreadyName && alreadyName?._id != userId) {
       return {
         success: false,
         message: "뭐 맘대로 개발자도구만져서 닉네임 바꾸고 그러지 마세요",
@@ -79,14 +86,23 @@ export default defineEventHandler(async (event) => {
       return { success: false, message: "User update failed" };
     }
 
-    // 민감한 정보 제외하고 응답
-    const { password, ...userWithoutPassword } = updatedUser.toObject();
-
     return {
       success: true,
       message: "User updated successfully",
-      user: userWithoutPassword,
+      user: {
+        userId: updatedUser._id,
+        username: updatedUser.username,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        profileImage: updatedUser.profileImage,
+        phone: updatedUser.phone,
+        address: updatedUser.address,
+        lastLogin: updatedUser.lastLogin,
+        premiumUntil: updatedUser.premiumUntil,
+      },
     };
+    
   } catch (error) {
     // 토큰 관련 에러 처리
     if (error instanceof jwt.JsonWebTokenError) {

@@ -3,6 +3,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import RegisterModel from "../../models/auth/RegisterModel";
 import dotenv from "dotenv";
+import { AdminUpdateUserData } from "~/types/userInfoTypes";
+import { Document } from "mongoose";
 
 dotenv.config();
 
@@ -21,7 +23,9 @@ export default defineEventHandler(async (event) => {
       return { success: false, message: "이메일과 비밀번호가 필요합니다." };
     }
 
-    const user = await RegisterModel.findOne({ username: body.username });
+    const user = (await RegisterModel.findOne({
+      username: body.username,
+    })) as AdminUpdateUserData & Document;
 
     if (!user) {
       event.node.res.statusCode = 401;
@@ -36,6 +40,7 @@ export default defineEventHandler(async (event) => {
       user.loginSuspendedTime = null;
       user.loginAttempts = 0;
       console.log("로그인 시도 0회로 리셋됨 (3.6초 경과)");
+
       await user.save(); // 초기화된 값 저장
     }
 

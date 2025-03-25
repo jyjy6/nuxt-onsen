@@ -142,6 +142,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useSecureApi } from "~/composables/useSecureApi";
+import { useLoginStore } from "~/store/login";
 
 interface RegisterForm {
   username: string;
@@ -308,6 +309,7 @@ const updateURL = (data: { fieldName: string; url: string }) => {
   }
 };
 
+const loginStore = useLoginStore();
 const submitForm = async () => {
   if (!props.isPut && !isUsernameDuplicateChecked.value) {
     alert("아이디 중복 확인이 필요합니다.");
@@ -325,10 +327,10 @@ const submitForm = async () => {
     form.value.username = props.formData?.username as string;
     try {
       const response = await api.securePut(props.apiURL, form.value);
-      console.log(form.value);
-      console.log(props.apiURL);
-      alert("회원수정이 완료되었습니다!");
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+      loginStore.loadUserFromLocalStorage();
       router.push("/");
+      alert("회원수정이 완료되었습니다!");
     } catch (error) {
       console.error("회원수정 실패:", error);
       alert("회원수정에 실패했습니다.");

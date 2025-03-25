@@ -89,7 +89,12 @@
       </div>
 
       <v-card-actions>
-        <v-btn block color="primary" :to="`/broadcast/${contentData?._id}`">
+        <v-btn
+          block
+          color="primary"
+          :to="`/broadcast/${contentData?._id}`"
+          @click="modalStore.closeModal"
+        >
           방송 페이지 이동
         </v-btn>
       </v-card-actions>
