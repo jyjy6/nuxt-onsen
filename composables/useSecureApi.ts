@@ -15,27 +15,26 @@ export const useSecureApi = () => {
   // CSRF 토큰 가져오기
   const fetchCsrfToken = async () => {
     if (csrfToken.value) return csrfToken.value;
-
-    const tokenFromCookie = getCsrfTokenFromCookie(); // 쿠키에서 가져오기
+  
+    const tokenFromCookie = getCsrfTokenFromCookie();
     if (tokenFromCookie) {
       csrfToken.value = tokenFromCookie;
       return csrfToken.value;
     }
-
-    isLoading.value = true;
-    error.value = null;
-
+  
+    // 이 요청은 실제로 토큰을 가져오기 위한 것이 아니라, 
+    // Spring Security가 CSRF 토큰을 생성하도록 트리거하는 용도.
     try {
-      //POST 요청으로 변경하고, Cache-Control: no-store 헤더를 추가하여 캐싱을 방지하는 것이 더 안전. 
-      const response = await axios.get("/api/auth/csrf");
-      csrfToken.value = response.data.csrfToken;
-      return csrfToken.value;
+      await axios.get("/api/auth/csrf");
+      // 쿠키에서 다시 토큰 추출
+      const refreshedTokenFromCookie = getCsrfTokenFromCookie();
+      if (refreshedTokenFromCookie) {
+        csrfToken.value = refreshedTokenFromCookie;
+        return csrfToken.value;
+      }
     } catch (err) {
       console.error("CSRF 토큰을 가져오는 데 실패했습니다:", err);
-      error.value = err as AxiosError;
       return null;
-    } finally {
-      isLoading.value = false;
     }
   };
 

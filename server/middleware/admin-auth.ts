@@ -31,7 +31,6 @@ export default defineEventHandler(async (event) => {
           message: "관리자 권한이 필요합니다.",
         });
       }
-
       // 토큰에서 얻은 사용자 정보를 이벤트에 추가
       event.context.auth = decoded;
     } catch (error) {
