@@ -3,7 +3,7 @@ services:
     image: onsen:1
     build: .
     ports:
-      - "3000"
+      - "3000:3000"
     env_file:
       - .env
     networks:

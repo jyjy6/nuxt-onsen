@@ -31,10 +31,6 @@ const menuItems = [
     path: "/admin/add/contents",
   },
   {
-    title: "모든 방송 리스트",
-    path: "/broadcast/list",
-  },
-  {
     title: "진행자 추가",
     path: "/admin/add/personality",
   },

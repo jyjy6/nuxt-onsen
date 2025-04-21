@@ -325,21 +325,33 @@ const openModal = (item: Content) => {
 </script>
 
 <template>
-  <main style="width: 1800px; margin: 0 auto; background-color: #f7f7f7">
+  <main
+    style="
+      width: 100%;
+      max-width: 1800px;
+      margin: 0 auto;
+      background-color: #f7f7f7;
+    "
+  >
     <div style="width: 100%; margin: 0 auto; padding: 0">
       <div
         class="contents-row"
         style="
           width: 100%;
-          height: 400px;
           margin: 0 auto;
           display: flex;
           justify-content: center;
           gap: 20px;
+          flex-direction: row;
         "
+        :class="{ 'flex-column': $vuetify.display.smAndDown }"
       >
         <!-- 메인화면 좌측 비디오 -->
-        <div class="contents-col" style="width: 48%">
+        <div
+          class="contents-col"
+          :style="$vuetify.display.smAndDown ? 'width: 100%' : 'width: 48%'"
+          style="min-height: 300px"
+        >
           <v-card
             class="d-flex align-center justify-center"
             style="height: 100%; width: 100%; margin: 0"
@@ -393,16 +405,36 @@ const openModal = (item: Content) => {
           </v-card>
         </div>
 
-        <div class="contents-col" style="width: 38%; height: 100%">
+        <div
+          class="contents-col"
+          :style="
+            $vuetify.display.smAndDown
+              ? 'width: 100%; margin-top: 20px'
+              : 'width: 38%'
+          "
+          style="min-height: 300px"
+        >
           <v-card style="height: 100%; margin: 0; width: 100%">
             <client-only>
-              <v-container style="height: 50%">
+              <v-container
+                :style="
+                  $vuetify.display.smAndDown
+                    ? 'height: auto; min-height: 150px'
+                    : 'height: 50%'
+                "
+              >
                 <SwiperComponent
                   :swiperOptions="swiperOptions2"
                   :items="noticeSlide"
                 />
               </v-container>
-              <v-container style="height: 50%">
+              <v-container
+                :style="
+                  $vuetify.display.smAndDown
+                    ? 'height: auto; min-height: 150px'
+                    : 'height: 50%'
+                "
+              >
                 <SwiperComponent
                   :swiperOptions="swiperOptions"
                   :items="items"
@@ -414,21 +446,28 @@ const openModal = (item: Content) => {
       </div>
     </div>
     <client-only>
-      <v-container class="d-flex justify-center ga-2 mt-10 pa-0">
+      <v-container class="d-flex justify-center flex-wrap ga-2 mt-10 pa-0">
         <v-btn
           v-for="(button, index) in buttons"
           :key="index"
           :class="['tonal-btn', { active: button.active }]"
           @click="setActiveButton(index)"
           variant="tonal"
-          style="width: 150px"
+          :style="
+            $vuetify.display.smAndDown
+              ? 'width: calc(33.33% - 10px); margin: 0 5px;'
+              : 'width: 150px'
+          "
         >
           {{ button.label }}
         </v-btn>
       </v-container>
 
       <!-- 방송일람 페이지 -->
-      <v-container style="width: 75%" v-if="buttons[0].active">
+      <v-container
+        :style="$vuetify.display.smAndDown ? 'width: 100%' : 'width: 75%'"
+        v-if="buttons[0].active"
+      >
         <p style="color: #43b149; font-size: 1.2rem; margin-bottom: 15px">
           おすすめ番組
         </p>
@@ -438,25 +477,28 @@ const openModal = (item: Content) => {
         />
 
         <div
-          class="d-flex align-center justify-center"
+          class="d-flex align-center"
+          :class="{
+            'flex-column': $vuetify.display.smAndDown,
+            'justify-center': !$vuetify.display.smAndDown,
+          }"
           style="margin-top: 100px"
         >
           <p
-            style="
-              color: #43b149;
-              font-size: 1.2rem;
-              margin-right: 20px;
-              white-space: nowrap;
+            :style="
+              $vuetify.display.smAndDown
+                ? 'color: #43b149; font-size: 1.2rem; margin-bottom: 15px'
+                : 'color: #43b149; font-size: 1.2rem; margin-right: 20px; white-space: nowrap'
             "
           >
             カテゴリ
           </p>
 
-          <div class="d-flex gap-2 justify-center align-center">
+          <div class="d-flex gap-2 flex-wrap justify-center align-center">
             <v-btn
               v-for="(button, index) in categoryButtons"
               :key="index"
-              :class="['tonal-btn', { active: button.active }, 'mr-5']"
+              :class="['tonal-btn', { active: button.active }, 'mr-5', 'mb-2']"
               @click="setCategoryActive(index)"
               variant="tonal"
               size="small"
@@ -475,11 +517,20 @@ const openModal = (item: Content) => {
           <v-col
             v-for="(item, index) in contentsList"
             :key="index"
-            style="max-width: calc(100% / 3.5); flex: 0 0 calc(100% / 3.5)"
+            :cols="$vuetify.display.xs ? 12 : $vuetify.display.sm ? 6 : 4"
+            :style="
+              $vuetify.display.mdAndUp
+                ? 'max-width: calc(100% / 3.5); flex: 0 0 calc(100% / 3.5)'
+                : ''
+            "
           >
             <v-card
               class="mb-4 elevation-2"
-              style="height: 450px"
+              :style="
+                $vuetify.display.smAndDown
+                  ? 'height: auto; min-height: 450px'
+                  : 'height: 450px'
+              "
               @click="openModal(item)"
             >
               <!-- 이미지 -->
@@ -502,6 +553,7 @@ const openModal = (item: Content) => {
                       color="teal"
                       text-color="white"
                       pill
+                      size="small"
                     >
                       {{ person }}
                     </v-chip>
@@ -514,6 +566,7 @@ const openModal = (item: Content) => {
                       color="blue"
                       text-color="white"
                       pill
+                      size="small"
                     >
                       {{ tag }}
                     </v-chip>
