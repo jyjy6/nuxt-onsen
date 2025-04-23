@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
         client_id:
           "223494383653-in3rq3532hghjll1uclub5l57cq1hvt2.apps.googleusercontent.com",
         client_secret: "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",
-        redirect_uri: `https://ec2-43-203-220-238.ap-northeast-2.compute.amazonaws.com/api/auth/google-callback`,
+        redirect_uri: `${process.env.AUTH_ORIGIN}/api/auth/google-callback`,
         grant_type: "authorization_code",
       }),
     });
