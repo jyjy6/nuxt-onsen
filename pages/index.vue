@@ -6,11 +6,10 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import axios from "axios";
 import { useModalStore } from "~/store/modal";
+import type { Banner } from "~/types/bannerTypes";
 
 const modules = [Navigation, Pagination, Autoplay];
-// First Swiper
-// 스와이퍼들 오브젝트자료 하드코딩돼어있는거 나중에 1,2번은 각각 공지/이벤트 데이터베이스에 넣고 출력
-// 3번쨰 스와이퍼는 おすすめ방송 일단 내맘대로하고 나중에 유저정보에맞춰서 AI분석에따른 おすすめ방송출력
+// First Swiper 
 const swiperOptions = {
   modules,
   slidesPerView: 1,
@@ -32,28 +31,33 @@ const swiperOptions = {
     },
   },
 };
-const items = ref([
-  {
-    id: 1,
-    title: "슬라이드 1",
-    image:
-      "https://d3bzklg4lms4gh.cloudfront.net/banner_ad/banner_image/default/production/cb/2a/cce5eece71de4167be5b2ac4de4a67470bfb/image?v=1728367671",
-  },
-  {
-    id: 2,
-    title: "슬라이드 2",
-    image:
-      "https://d3bzklg4lms4gh.cloudfront.net/banner_ad/banner_image/default/production/eb/ae/2ed314b1f168955bad9a7016e47560b50f6a/image?v=1730862146",
-  },
-  {
-    id: 3,
-    title: "슬라이드 3",
-    image:
-      "https://d3bzklg4lms4gh.cloudfront.net/banner_ad/banner_image/default/production/8b/ae/fc9547f03b3a199334f862dbfa2db417b122/image?v=1732072329",
-  },
-]);
+const noticeSlide = ref([]);
+const fetchSelectedBanners1 = async () => {
+  try {
+    const response = await axios.get("/api/admin/banners", {
+      params: {
+        selected: true,
+        bannerNumber: 1,
+      },
+    });
+    // 응답 데이터 형식을 SwiperComponent에 맞게 변환
+    noticeSlide.value = response.data.data.map((banner: Banner) => ({
+      id: banner._id,
+      title: banner.title,
+      image: banner.mainImg,
+      link: banner.bannerPopup || "#", // 팝업 링크가 없으면 '#'으로 설정
+    }));
+  } catch (err) {
+    console.error("배너 데이터 로딩 중 오류:", err);
+  }
+};
 
-// Second Swiper
+onMounted(() => {
+  fetchSelectedBanners1();
+});
+// First Swiper End ********************************************************************
+
+// Second Swiper ***********************************************************************
 const swiperOptions2 = {
   ...swiperOptions, // 첫 번째 옵션을 재사용
   autoplay: {
@@ -61,34 +65,50 @@ const swiperOptions2 = {
     disableOnInteraction: false,
   },
 };
-const noticeSlide = ref([
-  {
-    id: 4,
-    title: "공지 슬라이드1",
-    image:
-      "https://d3bzklg4lms4gh.cloudfront.net/banner_ad/banner_image/default/production/30/1c/931f6181f616abcb0a8177b0d7d9db1f5675/image?v=1731578493",
-  },
-  {
-    id: 5,
-    title: "공지 슬라이드2",
-    image:
-      "https://d3bzklg4lms4gh.cloudfront.net/banner_ad/banner_image/default/production/ed/2c/a5c823dcc6de5df90572f07f1d36cb9d8929/image?v=1711941354",
-  },
-  {
-    id: 6,
-    title: "공지 슬라이드3",
-    image:
-      "https://d3bzklg4lms4gh.cloudfront.net/banner_ad/banner_image/default/production/04/bc/125814aad5c9a83c60b462f5a5d78373c3e7/image?v=1690427379",
-  },
-]);
 
-//Third Swiper
+const secondSwiper = ref([]);
+
+const fetchSelectedBanners2 = async () => {
+  try {
+    const response = await axios.get("/api/admin/banners", {
+      params: {
+        selected: true,
+        bannerNumber: 2,
+      },
+    });
+    // 응답 데이터 형식을 SwiperComponent에 맞게 변환
+    secondSwiper.value = response.data.data.map((banner: Banner) => ({
+      id: banner._id,
+      title: banner.title,
+      image: banner.mainImg,
+      link: banner.bannerPopup || "#", // 팝업 링크가 없으면 '#'으로 설정
+    }));
+  } catch (err) {
+    console.error("배너 데이터 로딩 중 오류:", err);
+  }
+};
+
+onMounted(() => {
+  fetchSelectedBanners2();
+});
+
+// Second Swiper End**************************************************************
+
+//Third Swiper ********************************************************************
 const swiperOptions3 = {
   autoplay: {
     delay: 3000, // 다른 딜레이 값
     disableOnInteraction: false,
   },
   modules,
+  breakpoints: {
+    480: {
+      slidesPerView: 2,
+    },
+    720: {
+      slidesPerView: 4,
+    },
+  },
   slidesPerView: 4,
   spaceBetween: 30,
   navigation: true,
@@ -128,7 +148,8 @@ const recommendedContents = ref([
   },
 ]);
 
-// swiper end=========================================================================
+
+// thirdswiper end=========================================================================
 
 interface Content {
   _id: string;
@@ -333,33 +354,12 @@ const openModal = (item: Content) => {
       background-color: #f7f7f7;
     "
   >
-    <div style="width: 100%; margin: 0 auto; padding: 0">
-      <div
-        class="contents-row"
-        style="
-          width: 100%;
-          margin: 0 auto;
-          display: flex;
-          justify-content: center;
-          gap: 20px;
-          flex-direction: row;
-        "
-        :class="{ 'flex-column': $vuetify.display.smAndDown }"
-      >
+    <div class="container-wrapper">
+      <div class="contents-row">
         <!-- 메인화면 좌측 비디오 -->
-        <div
-          class="contents-col"
-          :style="$vuetify.display.smAndDown ? 'width: 100%' : 'width: 48%'"
-          style="min-height: 300px"
-        >
-          <v-card
-            class="d-flex align-center justify-center"
-            style="height: 100%; width: 100%; margin: 0"
-          >
-            <v-row
-              class="d-flex align-center justify-center"
-              style="width: 100%; height: 100%"
-            >
+        <div class="contents-col video-col">
+          <v-card class="d-flex align-center justify-center h-100 w-100 m-0">
+            <v-row class="d-flex align-center justify-center w-100 h-100">
               <v-col
                 v-if="
                   playingEpisode?.contentsLink.includes('youtube') ||
@@ -378,7 +378,7 @@ const openModal = (item: Content) => {
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   referrerpolicy="strict-origin-when-cross-origin"
                   allowfullscreen
-                  style="max-width: 100%; max-height: 100%"
+                  style="max-width: 100%; max-height: 100%; min-height: 350px"
                 ></iframe>
               </v-col>
 
@@ -405,39 +405,19 @@ const openModal = (item: Content) => {
           </v-card>
         </div>
 
-        <div
-          class="contents-col"
-          :style="
-            $vuetify.display.smAndDown
-              ? 'width: 100%; margin-top: 20px'
-              : 'width: 38%'
-          "
-          style="min-height: 300px"
-        >
+        <div class="contents-col swiper-col">
           <v-card style="height: 100%; margin: 0; width: 100%">
             <client-only>
-              <v-container
-                :style="
-                  $vuetify.display.smAndDown
-                    ? 'height: auto; min-height: 150px'
-                    : 'height: 50%'
-                "
-              >
+              <v-container class="swiper-container first-swiper">
                 <SwiperComponent
-                  :swiperOptions="swiperOptions2"
+                  :swiperOptions="swiperOptions"
                   :items="noticeSlide"
                 />
               </v-container>
-              <v-container
-                :style="
-                  $vuetify.display.smAndDown
-                    ? 'height: auto; min-height: 150px'
-                    : 'height: 50%'
-                "
-              >
+              <v-container class="swiper-container second-swiper">
                 <SwiperComponent
-                  :swiperOptions="swiperOptions"
-                  :items="items"
+                  :swiperOptions="swiperOptions2"
+                  :items="secondSwiper"
                 />
               </v-container>
             </client-only>
@@ -617,5 +597,56 @@ const openModal = (item: Content) => {
   height: 100%;
   width: 80%;
   margin: 0 auto;
+}
+.container-wrapper {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.contents-row {
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-direction: row;
+}
+
+.contents-col {
+  min-height: 300px;
+}
+
+.video-col {
+  width: 48%;
+}
+
+.swiper-col {
+  width: 38%;
+}
+
+.swiper-container {
+  height: 50%;
+}
+
+/* 모바일 화면에서의 스타일 */
+@media (max-width: 960px) {
+  .contents-row {
+    flex-direction: column;
+  }
+
+  .video-col,
+  .swiper-col {
+    width: 100%;
+  }
+
+  .swiper-col {
+    margin-top: 20px;
+  }
+
+  .swiper-container {
+    height: auto;
+    min-height: 150px;
+  }
 }
 </style>

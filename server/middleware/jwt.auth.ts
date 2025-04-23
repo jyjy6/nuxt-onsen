@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 
-//이 코드는 미들웨어를 활용한 테스트코드로 실제 토큰관리는 api/auth/refresh-token.ts를 거쳐서함 (plugins/axios.ts 인터셉터에서 검증후 ->refresh-token.ts에서 토큰을 생성)
+// 이 코드는 미들웨어를 활용한 테스트코드로 실제 토큰관리는 api/auth/refresh-token.ts를 거쳐서함
+// (plugins/axios.ts 인터셉터에서 검증후 ->refresh-token.ts에서 토큰을 생성)
 export default defineEventHandler(async (event: any) => {
   // console.log("전체 헤더:", event.req.headers); // 헤더 전체 출력
   if (!event.req.url?.startsWith("/api/test")) {

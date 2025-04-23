@@ -46,6 +46,14 @@ const menuItems = [
     title: "회원목록&관리",
     path: "/admin/memberlist",
   },
+  {
+    title: "배너 관리",
+    path: "/admin/bannerlist",
+  },
+  {
+    title: "배너 추가",
+    path: "/admin/add/banner",
+  },
 ];
 </script>
 
