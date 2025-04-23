@@ -13,15 +13,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup SSH
+      - name: Setup SSH with keepalive
         uses: webfactory/ssh-agent@v0.7.0
         with:
           ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
 
-      - name: Add SSH known hosts
+      - name: Configure SSH
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+          # SSH 연결 유지 설정 추가
+          echo "Host *
+            ServerAliveInterval 60
+            ServerAliveCountMax 10" > ~/.ssh/config
+          chmod 600 ~/.ssh/config
 
       - name: Create .env file
         run: |
@@ -36,9 +41,35 @@ jobs:
           # rsync를 사용하여 현재 디렉토리의 모든 파일 전송 (node_modules 제외)
           rsync -avz --exclude 'node_modules' --exclude '.git' ./ ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app/
 
-      - name: Deploy on EC2
+      - name: Create deployment script
         run: |
-          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "cd /home/${{ secrets.EC2_USERNAME }}/app && docker-compose down || true"
-          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "cd /home/${{ secrets.EC2_USERNAME }}/app && docker system prune -af || true"
-          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "cd /home/${{ secrets.EC2_USERNAME }}/app && docker-compose up -d --build"
+          cat > deploy.sh << 'EOL'
+          #!/bin/bash
+          set -e
+
+          cd /home/$USER/app
+          
+          # Docker 컨테이너 중지 및 시스템 정리
+          docker-compose down || true
+          docker system prune -af || true
+          
+          # Docker 이미지 빌드 및 컨테이너 시작 (백그라운드에서 로그 저장)
+          docker-compose up -d --build
+          
+          # 배포 상태 확인
+          docker-compose ps
+          EOL
+          
+          chmod +x deploy.sh
+          scp deploy.sh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/tmp/
+
+      - name: Deploy on EC2 
+        run: |
+          # 배포 스크립트를 별도로 실행하여 SSH 연결 문제 방지
+          ssh -o ServerAliveInterval=60 ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "bash /tmp/deploy.sh"
+
+      - name: Check deployment status
+        run: |
+          # 잠시 기다린 후 상태 확인
+          sleep 10
           ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "cd /home/${{ secrets.EC2_USERNAME }}/app && docker-compose ps"
