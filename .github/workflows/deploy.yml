@@ -13,11 +13,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install dependencies & Build Nuxt
-        run: |
-          npm ci
-          npm run build
-
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.7.0
         with:
@@ -27,12 +22,38 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-      - name: Create .env.production file
+
+      - name: Create .env file
         run: |
-          echo "${{ secrets.ENV_PROD }}" > .env.production
+          echo "${{ secrets.ENV_PROD }}" > .env
+
+      - name: Ensure app directory exists on EC2
+        run: |
+          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "mkdir -p /home/${{ secrets.EC2_USERNAME }}/app"
+
       - name: Deploy to EC2
         run: |
-          scp .env.production ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app/
-          scp -r docker-compose.yml nginx Dockerfile ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app/
-          scp -r .output package*.json ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app/
-          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "cd /home/${{ secrets.EC2_USERNAME }}/app && docker-compose down && docker-compose up -d --build"
+          # 환경 변수 파일 전송
+          scp .env ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app/
+
+          # 도커 설정 파일 전송
+          scp docker-compose.yml Dockerfile ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app/
+          
+          # Nginx 설정 전송 (필요한 경우)
+          scp -r nginx ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app/
+          
+          # 소스 코드 전송 (Docker에서 빌드될 예정)
+          scp -r src components assets layouts pages plugins public static nuxt.config.js package*.json ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app/
+
+      - name: Stop running containers and prune
+        run: |
+          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "cd /home/${{ secrets.EC2_USERNAME }}/app && docker-compose down || true"
+          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "docker system prune -f || true"
+
+      - name: Build and start with Docker Compose
+        run: |
+          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "cd /home/${{ secrets.EC2_USERNAME }}/app && docker-compose up -d --build"
+
+      - name: Verify deployment
+        run: |
+          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "cd /home/${{ secrets.EC2_USERNAME }}/app && docker-compose ps"
