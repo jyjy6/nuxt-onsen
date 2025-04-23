@@ -1,4 +1,3 @@
-<!-- pages/auth/oauth-success.vue -->
 <template>
   <div class="flex items-center justify-center min-h-screen bg-gray-100">
     <div class="bg-white p-8 rounded shadow-md text-center max-w-md w-full">
