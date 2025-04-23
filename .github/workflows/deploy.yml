@@ -2,15 +2,21 @@ name: Deploy to EC2
 
 on:
   push:
-    branches: [main] # 메인 브랜치에 푸시될 때 실행
+    branches: [main]
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Install dependencies & Build Nuxt
+        run: |
+          npm ci
+          npm run build
 
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.7.0
@@ -21,9 +27,12 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-
+      - name: Create .env.production file
+        run: |
+          echo "${{ secrets.ENV_PROD }}" > .env.production
       - name: Deploy to EC2
         run: |
+          scp .env.production ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app/
           scp -r docker-compose.yml nginx/nginx.conf Dockerfile ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app/
-          scp -r .nuxt-onsen .output package*.json ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app/
+          scp -r .output package*.json ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app/
           ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "cd /home/${{ secrets.EC2_USERNAME }}/app && docker-compose down && docker-compose up -d --build"
