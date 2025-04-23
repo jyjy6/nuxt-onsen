@@ -27,33 +27,18 @@ jobs:
         run: |
           echo "${{ secrets.ENV_PROD }}" > .env
 
-      - name: Ensure app directory exists on EC2
+      - name: Create app directory on EC2
         run: |
           ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "mkdir -p /home/${{ secrets.EC2_USERNAME }}/app"
 
-      - name: Deploy to EC2
+      - name: Transfer files to EC2
         run: |
-          # 환경 변수 파일 전송
-          scp .env ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app/
+          # rsync를 사용하여 현재 디렉토리의 모든 파일 전송 (node_modules 제외)
+          rsync -avz --exclude 'node_modules' --exclude '.git' ./ ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app/
 
-          # 도커 설정 파일 전송
-          scp docker-compose.yml Dockerfile ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app/
-          
-          # Nginx 설정 전송 (필요한 경우)
-          scp -r nginx ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app/
-          
-          # 소스 코드 전송 (Docker에서 빌드될 예정)
-          scp -r src components assets layouts pages plugins public static nuxt.config.js package*.json ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app/
-
-      - name: Stop running containers and prune
+      - name: Deploy on EC2
         run: |
           ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "cd /home/${{ secrets.EC2_USERNAME }}/app && docker-compose down || true"
-          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "docker system prune -f || true"
-
-      - name: Build and start with Docker Compose
-        run: |
+          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "cd /home/${{ secrets.EC2_USERNAME }}/app && docker system prune -af || true"
           ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "cd /home/${{ secrets.EC2_USERNAME }}/app && docker-compose up -d --build"
-
-      - name: Verify deployment
-        run: |
           ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "cd /home/${{ secrets.EC2_USERNAME }}/app && docker-compose ps"
