@@ -2,7 +2,7 @@ FROM node:20 AS builder
 WORKDIR /app
 
 # 메모리 설정 추가
-ENV NODE_OPTIONS="--max-old-space-size=4096"
+ENV NODE_OPTIONS="--max-old-space-size=512"
 
 # package.json과 lock 파일 복사 후 의존성 설치
 COPY package*.json ./

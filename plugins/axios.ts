@@ -1,6 +1,8 @@
 import axios from "axios";
 
 export default defineNuxtPlugin((nuxtApp) => {
+
+
   // 액세스 토큰을 재발급받는 함수
   const refreshAccessToken = async () => {
     console.log("refreshAccessToken: Function invoked");
@@ -26,6 +28,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   };
 
   // Nuxt 앱 컨텍스트에 axios 인터셉터 추가
+
   const addAxiosInterceptors = () => {
     // 요청 인터셉터
     axios.interceptors.request.use(

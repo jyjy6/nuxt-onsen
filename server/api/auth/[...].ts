@@ -3,8 +3,7 @@ import { defineEventHandler, setCookie } from "h3";
 
 export default defineEventHandler(async (event) => {
   // Google OAuth 리다이렉트 URL 생성
-  const clientId =
-    "223494383653-in3rq3532hghjll1uclub5l57cq1hvt2.apps.googleusercontent.com";
+  const clientId = process.env.GOOGLE_CLIENT_ID;
   const redirectUri = `${process.env.AUTH_ORIGIN}/api/auth/google-callback`;
   const scope = "email profile";
 

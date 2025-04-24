@@ -9,7 +9,7 @@ import { useModalStore } from "~/store/modal";
 import type { Banner } from "~/types/bannerTypes";
 
 const modules = [Navigation, Pagination, Autoplay];
-// First Swiper 
+// First Swiper
 const swiperOptions = {
   modules,
   slidesPerView: 1,
@@ -34,7 +34,7 @@ const swiperOptions = {
 const noticeSlide = ref([]);
 const fetchSelectedBanners1 = async () => {
   try {
-    const response = await axios.get("/api/admin/banners", {
+    const response = await axios.get("/api/banners", {
       params: {
         selected: true,
         bannerNumber: 1,
@@ -70,7 +70,7 @@ const secondSwiper = ref([]);
 
 const fetchSelectedBanners2 = async () => {
   try {
-    const response = await axios.get("/api/admin/banners", {
+    const response = await axios.get("/api/banners", {
       params: {
         selected: true,
         bannerNumber: 2,
@@ -147,7 +147,6 @@ const recommendedContents = ref([
       "https://d3bzklg4lms4gh.cloudfront.net/program_info/image/default/production/3a/6b/3de4026429fa7a4cbae8cc472eae3e9d4b39/image?v=1733994177",
   },
 ]);
-
 
 // thirdswiper end=========================================================================
 

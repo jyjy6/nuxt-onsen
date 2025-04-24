@@ -21,9 +21,8 @@ export default defineEventHandler(async (event) => {
       },
       body: new URLSearchParams({
         code: code.toString(),
-        client_id:
-          "223494383653-in3rq3532hghjll1uclub5l57cq1hvt2.apps.googleusercontent.com",
-        client_secret: "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",
+        client_id: `${process.env.GOOGLE_CLIENT_ID}`,
+        client_secret: `${process.env.GOOGLE_CLIENT_SECRET}`,
         redirect_uri: `${process.env.AUTH_ORIGIN}/api/auth/google-callback`,
         grant_type: "authorization_code",
       }),
