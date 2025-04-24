@@ -48,16 +48,23 @@ jobs:
           set -e
 
           cd /home/$USER/app
-          
+
           # Docker 컨테이너 중지 및 시스템 정리
           docker-compose down || true
           docker system prune -af || true
-          
-          # Docker 이미지 빌드 및 컨테이너 시작 (백그라운드에서 로그 저장)
-          docker-compose up -d --build
-          
+
+          # Docker 빌드 캐시 정리
+          docker builder prune -f
+
+          # 빌드 메모리 설정 및 로그 확인
+          export NODE_OPTIONS="--max-old-space-size=4096"
+          docker-compose build --no-cache
+          docker-compose up -d
+
           # 배포 상태 확인
           docker-compose ps
+          # 로그 확인을 위해 빌드 과정의 로그 출력 (문제 진단에 도움)
+          docker-compose logs --tail=200
           EOL
           
           chmod +x deploy.sh

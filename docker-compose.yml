@@ -6,6 +6,9 @@ services:
       - "3000:3000"
     env_file:
       - .env
+    environment:
+      - NODE_OPTIONS=--max-old-space-size=4096
+    mem_limit: 4g
     networks:
       - mynet1
 
