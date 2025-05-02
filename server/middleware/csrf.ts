@@ -9,6 +9,7 @@ export default defineEventHandler((event) => {
     !event.path.startsWith("/api/") ||
     event.path.startsWith("/api/upload") ||
     event.path.startsWith("/api/auth/login") ||
+    event.path.startsWith("/api/auth/logout") ||
     event.path.startsWith("/api/auth/refresh-token")
   ) {
     return; //위 API경로는 CSRF 검증 제외

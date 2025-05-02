@@ -56,9 +56,10 @@ export const useLoginStore = defineStore("login", () => {
     }
   };
 
+  const api = useSecureApi();
   const logout = async () => {
     try {
-      await axios.post("/api/auth/logout");
+      await api.securePost("/api/auth/logout", {});
     } catch (error) {
       console.error("로그아웃 오류:", error);
     } finally {

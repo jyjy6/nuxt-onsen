@@ -88,8 +88,9 @@ export default defineEventHandler(async (event) => {
     // 리프레시 토큰은 HTTP 전용 쿠키에 저장
     setCookie(event, "refreshToken", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      // secure: process.env.NODE_ENV === "production",
+      secure: false,
+      sameSite: "lax",
       path: "/",
       maxAge: 30 * 24 * 60 * 60, // 30일
     });

@@ -42,9 +42,9 @@
         <v-list-item to="/">
           <v-list-item-title>Home</v-list-item-title>
         </v-list-item>
-        <v-list-item to="/about">
+        <!-- <v-list-item to="/about">
           <v-list-item-title>音泉通販</v-list-item-title>
-        </v-list-item>
+        </v-list-item> -->
         <v-list-item v-if="user?.role === 'admin'" to="/test">
           <v-list-item-title>TEST</v-list-item-title>
         </v-list-item>
@@ -144,30 +144,30 @@ const rightButtons = ref([
     btnType: "text",
     to: "/",
   },
-  {
-    id: 1,
-    btnTitle: "音泉通販",
-    btnType: "text",
-    to: "/about",
-  },
-  {
-    id: 2,
-    btnTitle: "音泉チャンネル",
-    btnType: "text",
-    to: "/test",
-  },
-  {
-    id: 3,
-    btnTitle: "更新情報",
-    btnType: "text",
-    to: "/test",
-  },
-  {
-    id: 4,
-    btnTitle: "PREMIUM",
-    btnType: "text",
-    to: "/test",
-  },
+  // {
+  //   id: 1,
+  //   btnTitle: "音泉通販",
+  //   btnType: "text",
+  //   to: "/about",
+  // },
+  // {
+  //   id: 2,
+  //   btnTitle: "音泉チャンネル",
+  //   btnType: "text",
+  //   to: "/test",
+  // },
+  // {
+  //   id: 3,
+  //   btnTitle: "更新情報",
+  //   btnType: "text",
+  //   to: "/test",
+  // },
+  // {
+  //   id: 4,
+  //   btnTitle: "PREMIUM",
+  //   btnType: "text",
+  //   to: "/test",
+  // },
   {
     id: 5,
     btnTitle: "BroadCast List",

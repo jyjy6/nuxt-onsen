@@ -40,7 +40,17 @@ export default defineNuxtConfig({
   },
   nitro: {
     routeRules: {
-      "/api/**": { cors: true },
+      "/api/**": {
+        cors: true,
+        headers: {
+          "access-control-allow-origin":
+            "http://ec2-43-203-220-238.ap-northeast-2.compute.amazonaws.com",
+          "access-control-allow-credentials": "true",
+          "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+          "access-control-allow-headers":
+            "Content-Type, Authorization, X-CSRF-Token",
+        },
+      },
     },
   },
 });

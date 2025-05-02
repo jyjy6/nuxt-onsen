@@ -5,10 +5,14 @@ export default defineEventHandler(async (event) => {
     // 리프레시 토큰을 삭제하기 위해 쿠키 초기화
     setCookie(event, "refreshToken", "", {
       httpOnly: true,
-      secure: true,
-      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       path: "/",
       maxAge: 0, // 즉시 만료
+      domain:
+        process.env.NODE_ENV === "production"
+          ? "ec2-43-203-220-238.ap-northeast-2.compute.amazonaws.com"
+          : "",
     });
 
     // 필요 시, 서버 측에서 리프레시 토큰 무효화 로직 추가

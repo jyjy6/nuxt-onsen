@@ -99,9 +99,13 @@ export default defineEventHandler(async (event) => {
     setCookie(event, "refreshToken", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "lax",
       path: "/",
       maxAge: 30 * 24 * 60 * 60,
+      domain:
+        process.env.NODE_ENV === "production"
+          ? "ec2-43-203-220-238.ap-northeast-2.compute.amazonaws.com"
+          : "",
     });
 
     return {
