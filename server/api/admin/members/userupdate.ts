@@ -4,7 +4,6 @@ import bcrypt from "bcryptjs";
 import RegisterModel from "~/server/models/auth/RegisterModel";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { AdminUpdateUserData } from "~/types/userInfoTypes";
-import { IUser } from "~/types/userInfoTypes";
 
 export default defineEventHandler(async (event) => {
   try {
@@ -49,7 +48,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // 대상 사용자 정보 조회
-    const targetUser = await RegisterModel.findById(body._id) as IUser;
+    const targetUser = await RegisterModel.findById(body._id);
     if (!targetUser) {
       return { success: false, message: "Target user not found" };
     }
@@ -62,6 +61,8 @@ export default defineEventHandler(async (event) => {
       username: targetUser.username,
       name: body.name || targetUser.name,
       email: body.email || targetUser.email,
+      // role: body.role || targetUser.role,
+      // premiumUntil: body.premiumUntil || targetUser.premiumUntil,
       phone: body.phone || targetUser.phone || "",
       address: body.address || targetUser.address || {},
       profileImage: body.profileImage || targetUser.profileImage,
@@ -77,6 +78,8 @@ export default defineEventHandler(async (event) => {
       updatedData.password = await bcrypt.hash(body.password, 10);
     }
 
+    Object.assign(targetUser, updatedData);
+    
     // 데이터 업데이트
     await targetUser.save();
 

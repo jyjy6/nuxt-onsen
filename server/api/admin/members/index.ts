@@ -21,26 +21,35 @@ export default defineEventHandler(async (event) => {
     sortOptions[sortBy] = sortOrder;
 
     // 검색 파라미터
-    //     2️⃣ search 값이 있을 경우
-    // $or 연산자를 사용하여 하나라도 조건을 만족하면 검색 결과에 포함되도록 함.
-    // $regex를 사용하여 부분 일치 검색을 수행함.
-    // $options: "i"를 추가하여 대소문자 구분 없이 검색할 수 있도록 설정함.
-    //     2️⃣ search 값이 없을 경우
-    // 빈 객체 {}를 반환하여 검색 필터를 적용하지 않음 → 즉, 모든 데이터를 가져옴.
     const search = String(query.search || "");
+    
+    // 한글 자음 매핑 (입력된 자음 -> 실제 저장된 형태)
+    const jamoMap: Record<string, string> = {
+      'ㄱ': 'ᄀ', 'ㄲ': 'ᄁ', 'ㄴ': 'ᄂ', 'ㄷ': 'ᄃ', 'ㄸ': 'ᄄ',
+      'ㄹ': 'ᄅ', 'ㅁ': 'ᄆ', 'ㅂ': 'ᄇ', 'ㅃ': 'ᄈ', 'ㅅ': 'ᄉ',
+      'ㅆ': 'ᄊ', 'ㅇ': 'ᄋ', 'ㅈ': 'ᄌ', 'ㅉ': 'ᄍ', 'ㅊ': 'ᄎ',
+      'ㅋ': 'ᄏ', 'ㅌ': 'ᄐ', 'ㅍ': 'ᄑ', 'ㅎ': 'ᄒ'
+    };
+    
+    // 검색어 변환 (ㅈㅈ -> ᄌᄌ)
+    let convertedSearch = search;
+    if (search) {
+      convertedSearch = [...search].map(char => jamoMap[char] || char).join('');
+    }
+    
+    // 검색 쿼리 생성 - 원본 검색어와 변환된 검색어 둘 다 사용
     const searchQuery = search
       ? {
           $or: [
-            { name: { $regex: search, $options: "i" } },
-            { userId: { $regex: search, $options: "i" } },
-            { email: { $regex: search, $options: "i" } },
-            { role: { $regex: search, $options: "i" } },
+            { name: { $regex: convertedSearch, $options: "i" } },
+            { userId: { $regex: convertedSearch, $options: "i" } },
+            { email: { $regex: convertedSearch, $options: "i" } },
+            { role: { $regex: convertedSearch, $options: "i" } },
           ],
         }
       : {};
 
     // 데이터 가져오기 (페이지네이션, 정렬, 검색 적용)
-    // skip은 최초 몇개의 데이터를 skip(제외)할껀지, limit은 몇 개의 데이터를 가져올건지
     const members = await MembersModel.find(searchQuery)
       .sort(sortOptions)
       .skip(skip)

@@ -228,8 +228,6 @@ const fetchCategoryData = async (category: string) => {
         `/api/contents/getContents?date=土`
       );
       contentsList.value.push(...saturdaySundayData.data.data);
-      //사실 일요일 로직은 필요없지만 안전을위해서 넣음
-      //-> 필요없는이유는 categoryButtons에서 토,일요일을 나누지않고 土・日통합해서 최초 axios요청을 토요일 데이터만 불러오고있기에 이 if문에선 추가로 일요일 데이터만 불러오면되기 때문에.
     }
   } catch (error) {
     console.error("데이터를 가져오는 중 오류 발생:", error);

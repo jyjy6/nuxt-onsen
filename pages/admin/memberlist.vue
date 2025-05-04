@@ -74,28 +74,36 @@ const queryParams = computed(() => ({
   sortOrder: options.value.sortBy[0]?.order,
 }));
 
+import { useTimeoutFn } from '@vueuse/core'
+
+// 타임아웃 함수 초기화
+const { start: startFetch, stop: stopFetch } = useTimeoutFn(async () => {
+  loading.value = true;
+  try {
+    const response = await axios.get("/api/admin/members", {
+      params: {
+        page: queryParams.value.page,
+        itemsPerPage: queryParams.value.itemsPerPage,
+        sortBy: queryParams.value.sortBy,
+        sortOrder: queryParams.value.sortOrder,
+        search: queryParams.value.search,
+      },
+    });
+    allMembers.value = response.data.data;
+    totalItems.value = response.data.total;
+  } catch (error) {
+    console.error("멤버 목록을 불러오는 중 오류가 발생했습니다:", error);
+  } finally {
+    loading.value = false;
+  }
+}, 500) // 500ms(0.5초) 대기
+
+// queryParams 변경 감시
 watch(
   queryParams,
-  async (newParams) => {
-    loading.value = true;
-    try {
-      const response = await axios.get("/api/admin/members", {
-        params: {
-          page: newParams.page,
-          itemsPerPage: newParams.itemsPerPage, //이부분은 지워도됨 기본적으로 10개로 나오는거라
-          sortBy: newParams.sortBy,
-          sortOrder: newParams.sortOrder,
-          search: newParams.search,
-        },
-      });
-      allMembers.value = response.data.data;
-      totalItems.value = response.data.total;
-    } catch (error) {
-      console.error("멤버 목록을 불러오는 중 오류가 발생했습니다:", error);
-    } finally {
-      loading.value = false;
-    }
-    console.log(totalItems.value);
+  (newParams) => {
+    stopFetch() // 이전 타임아웃 취소
+    startFetch() // 새로운 타임아웃 시작
   },
   { deep: true, immediate: true }
 );
@@ -114,18 +122,6 @@ const totalPages = computed(() => {
   return Math.ceil(Number(totalItems.value) / perPage);
 });
 
-const filteredMembers = computed(() => {
-  if (!search.value) return allMembers.value;
-
-  const searchLower = search.value.toLowerCase();
-  return allMembers.value.filter(
-    (member) =>
-      member.name.toLowerCase().includes(searchLower) ||
-      member._id?.toLowerCase().includes(searchLower) ||
-      member.email.toLowerCase().includes(searchLower) ||
-      member.role.toLowerCase().includes(searchLower)
-  );
-});
 
 const formatDate = (dateString: string) => {
   if (!dateString) return "-";
@@ -225,7 +221,7 @@ const openKakaoAddressSearch = () => {
       <v-data-table
         v-model="selectedMembers"
         :headers="headers"
-        :items="filteredMembers"
+        :items="allMembers"
         :loading="loading"
         :items-per-page="options.itemsPerPage"
         :page="options.page"
@@ -336,7 +332,7 @@ const openKakaoAddressSearch = () => {
               <v-spacer></v-spacer>
 
               <div class="text-caption text-grey">
-                총 {{ filteredMembers.length }}명의 멤버
+                총 {{ allMembers.length }}명의 멤버
               </div>
             </div>
 

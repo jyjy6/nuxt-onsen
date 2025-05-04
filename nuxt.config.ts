@@ -9,7 +9,7 @@ export default defineNuxtConfig({
     transpile: ["vuetify"], // Vuetify 트랜스파일 설정
   },
   auth: {
-    baseURL: process.env.AUTH_ORIGIN || "http://localhost:3000",
+    baseURL: process.env.NODE_ENV === "production" ? process.env.AUTH_ORIGIN : "http://localhost:3000",
     provider: {
       type: "authjs",
     },
