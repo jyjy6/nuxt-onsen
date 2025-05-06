@@ -19,6 +19,9 @@
           outlined
         />
         <v-btn type="submit" block color="primary" class="mt-4">Login</v-btn>
+        <v-btn block color="warning" class="mt-4" @click="guestLogin">
+        게스트 로그인
+      </v-btn>
       </v-form>
       <v-divider class="my-4" />
       <v-btn @click="handleGoogleLogin" class="google-login-btn">
@@ -68,6 +71,14 @@ async function handleGoogleLogin() {
   } catch (error) {
     console.error("Google 로그인 오류:", error);
     // 에러 처리
+  }
+}
+
+const guestLogin = async () => {
+  try {
+    await loginStore.guestLogin();
+  } catch (error) {
+    console.error("게스트 로그인 오류:", error);
   }
 }
 </script>

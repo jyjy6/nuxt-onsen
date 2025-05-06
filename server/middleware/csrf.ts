@@ -2,7 +2,7 @@ import { defineEventHandler, getCookie, sendError } from "h3";
 
 // 이 코드는 미들웨어 composable/useSecureApi.ts에서 이미 쿠키로 csrf토큰 검증하는방식을 사용하고있어서
 // 사실필요없음 학습용. 이 미들웨어방식은 경로제외할곳이 많아서 귀찮기도하고
-// 하지만 쿠키확인하는방식은 useSecureApi에서 만들어놓은 securePost securePut 등의함수를 사용해야함
+// 하지만 쿠키확인하는방식은 useSecureApi에서 만들어놓은 securePost securePut 등의 함수를 사용해야함
 
 export default defineEventHandler((event) => {
   if (
@@ -10,7 +10,8 @@ export default defineEventHandler((event) => {
     event.path.startsWith("/api/upload") ||
     event.path.startsWith("/api/auth/login") ||
     event.path.startsWith("/api/auth/logout") ||
-    event.path.startsWith("/api/auth/refresh-token")
+    event.path.startsWith("/api/auth/refresh-token") ||
+    event.path.startsWith("/api/auth/guest")
   ) {
     return; //위 API경로는 CSRF 검증 제외
   }

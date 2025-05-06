@@ -89,13 +89,13 @@
       </v-col>
 
       <!-- 수정 버튼 -->
-      <v-col cols="12" md="8" class="text-right mt-6">
+      <v-col cols="12" md="8" class=" mt-6 d-flex justify-end" style="gap: 5px">
         <v-btn
           :to="`/admin/update/${content._id}`"
           color="primary"
           variant="elevated"
           size="large"
-          class="rounded-lg mr-5"
+          class="rounded-lg"
         >
           <v-icon start icon="mdi-pencil"></v-icon>
           수정
@@ -107,6 +107,9 @@
         >
           에피소드 추가
         </v-btn>
+
+        <DeleteButtonComponent size="large"
+        class="rounded-lg" :URL="`/api/admin/contents/${content._id}`" />
       </v-col>
     </v-row>
 

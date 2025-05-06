@@ -51,7 +51,7 @@
         <v-list-item to="/broadcast/list">
           <v-list-item-title>BroadCast List</v-list-item-title>
         </v-list-item>
-        <v-list-item v-if="user?.role === 'admin'" to="/admin">
+        <v-list-item v-if="user?.role === 'admin' || user?.role === 'guest'" to="/admin">
           <v-list-item-title>admin</v-list-item-title>
         </v-list-item>
         <v-list-item>
@@ -191,7 +191,7 @@ const rightButtons = ref([
 ]);
 const filteredButtons = computed(() =>
   rightButtons.value.filter(
-    (btn) => !btn.adminOnly || user.value?.role === "admin"
+    (btn) => !btn.adminOnly || user.value?.role === "admin" || user.value?.role === "guest"
   )
 );
 

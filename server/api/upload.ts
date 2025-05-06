@@ -3,21 +3,21 @@ import { S3Client } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import { defineEventHandler, readBody } from "h3";
 
-const getMimeType = (fileType: string) => {
-  const mimeTypes: Record<string, string> = {
-    "image/jpeg": "image/jpeg",
-    "image/png": "image/png",
-    "image/gif": "image/gif",
-    "image/webp": "image/webp",
-    "video/mp4": "video/mp4",
-    "video/webm": "video/webm",
-    "audio/mpeg": "audio/mpeg",
-    "audio/wav": "audio/wav",
-    "audio/ogg": "audio/ogg",
-  };
+// const getMimeType = (fileType: string) => {
+//   const mimeTypes: Record<string, string> = {
+//     "image/jpeg": "image/jpeg",
+//     "image/png": "image/png",
+//     "image/gif": "image/gif",
+//     "image/webp": "image/webp",
+//     "video/mp4": "video/mp4",
+//     "video/webm": "video/webm",
+//     "audio/mpeg": "audio/mpeg",
+//     "audio/wav": "audio/wav",
+//     "audio/ogg": "audio/ogg",
+//   };
 
-  return mimeTypes[fileType] || fileType || "application/octet-stream";
-};
+//   return mimeTypes[fileType] || fileType || "application/octet-stream";
+// };
 
 export default defineEventHandler(async (event) => {
   try {
@@ -90,7 +90,7 @@ export default defineEventHandler(async (event) => {
         Bucket: process.env.S3_BUCKET,
         Key: s3Key,
         Body: buffer,
-        ContentType: getMimeType(contentType),
+        ContentType: contentType,
         ContentDisposition: `inline; filename="${encodedFilename}"; filename*=UTF-8''${encodedFilename}`,
       },
       // 청크 단위로 분할 업로드 (대용량 파일용)

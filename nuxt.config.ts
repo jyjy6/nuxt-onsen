@@ -26,6 +26,9 @@ export default defineNuxtConfig({
     },
     trustProxy: true,
   },
+  middleware: {
+    global: ['guest-restrict'],
+  },
   devServer: {
     port: 3000,
     host: "0.0.0.0",

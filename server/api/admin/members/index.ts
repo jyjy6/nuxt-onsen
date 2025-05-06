@@ -30,9 +30,9 @@ export default defineEventHandler(async (event) => {
       'ㅆ': 'ᄊ', 'ㅇ': 'ᄋ', 'ㅈ': 'ᄌ', 'ㅉ': 'ᄍ', 'ㅊ': 'ᄎ',
       'ㅋ': 'ᄏ', 'ㅌ': 'ᄐ', 'ㅍ': 'ᄑ', 'ㅎ': 'ᄒ'
     };
-    
+  
     // 검색어 변환 (ㅈㅈ -> ᄌᄌ)
-    let convertedSearch = search;
+    let convertedSearch;
     if (search) {
       convertedSearch = [...search].map(char => jamoMap[char] || char).join('');
     }

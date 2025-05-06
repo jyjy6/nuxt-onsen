@@ -14,7 +14,7 @@ interface IUser extends Document {
     subAddress?: string;
   };
   status: "active" | "suspended" | "withdrawal";
-  role: "user" | "admin" | "premium";
+  role: "user" | "admin" | "premium" | "guest";
   lastLogin?: Date;
   loginAttempts?: number;
   resetPasswordToken?: string;
@@ -49,7 +49,7 @@ const registerSchema = new Schema<IUser>(
       enum: ["active", "suspended", "withdrawal"],
       default: "active",
     },
-    role: { type: String, enum: ["user", "admin", "premium"], default: "user" },
+    role: { type: String, enum: ["user", "admin", "premium", "guest"], default: "user" },
     lastLogin: { type: Date },
     loginAttempts: { type: Number, default: 0 },
     resetPasswordToken: { type: String },

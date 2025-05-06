@@ -56,6 +56,33 @@ export const useLoginStore = defineStore("login", () => {
     }
   };
 
+
+  const guestLogin = async () => {
+    try {
+      // 게스트 계정 생성 (이미 존재하는 경우 기존 계정 사용)
+      const response = await axios.post("/api/auth/guest", {
+        role: "guest"
+      });
+
+      if (response.data.success) {
+        const userData = response.data.user;
+        user.value = userData;
+        isLogin.value = true;
+
+        // ✅ 로컬 스토리지에 저장 (새로고침 시 유지)
+        localStorage.setItem("user", JSON.stringify(userData));
+        localStorage.setItem("accessToken", response.data.accessToken);
+
+        alert("로그인 성공!");
+        router.push("/").then(() => window.location.reload());
+      }
+    } catch (error) {
+      console.error("게스트 로그인 실패:", error);
+    };
+  };
+
+
+
   const api = useSecureApi();
   const logout = async () => {
     try {
@@ -86,5 +113,6 @@ export const useLoginStore = defineStore("login", () => {
     login,
     logout,
     loadUserFromLocalStorage,
+    guestLogin
   };
 });
