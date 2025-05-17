@@ -48,7 +48,7 @@ export const useS3Upload = () => {
           file: fileBase64,
           filename: file.name,
           contentType: file.type,
-          temp: temp,
+          temp: temp, 
         },
         {
           onUploadProgress: (progressEvent) => {

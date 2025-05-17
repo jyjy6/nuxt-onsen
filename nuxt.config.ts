@@ -1,4 +1,13 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { config as loadEnv } from "dotenv";
+import { resolve } from "path";
+
+const envFile =
+  process.env.NODE_ENV === "production"
+    ? ".env.production"
+    : ".env.development";
+
+loadEnv({ path: resolve(__dirname, envFile) });
 
 export default defineNuxtConfig({
   compatibilityDate: "2024-04-03",
@@ -9,7 +18,7 @@ export default defineNuxtConfig({
     transpile: ["vuetify"], // Vuetify 트랜스파일 설정
   },
   auth: {
-    baseURL: process.env.NODE_ENV === "production" ? process.env.AUTH_ORIGIN : "http://localhost:3000",
+    baseURL: process.env.AUTH_ORIGIN || "",
     provider: {
       type: "authjs",
     },
@@ -22,12 +31,9 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBase: process.env.AUTH_ORIGIN,
+      apiBase: process.env.AUTH_ORIGIN || "",
     },
     trustProxy: true,
-  },
-  middleware: {
-    global: ['guest-restrict'],
   },
   devServer: {
     port: 3000,
@@ -46,8 +52,7 @@ export default defineNuxtConfig({
       "/api/**": {
         cors: true,
         headers: {
-          "access-control-allow-origin":
-            "http://ec2-43-203-220-238.ap-northeast-2.compute.amazonaws.com",
+          "access-control-allow-origin": process.env.AUTH_ORIGIN,
           "access-control-allow-credentials": "true",
           "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
           "access-control-allow-headers":

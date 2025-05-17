@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
       maxAge: 0, // 즉시 만료
       domain:
         process.env.NODE_ENV === "production"
-          ? "ec2-43-203-220-238.ap-northeast-2.compute.amazonaws.com"
+          ? process.env.AUTH_ORIGIN
           : "",
     });
 

@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
         maxAge: 30 * 24 * 60 * 60,
         domain:
         process.env.NODE_ENV === "production"
-            ? "ec2-43-203-220-238.ap-northeast-2.compute.amazonaws.com"
+            ? process.env.AUTH_ORIGIN
             : "",
     });
     
